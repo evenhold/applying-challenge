@@ -10,7 +10,7 @@ export async function GET(
     const { id } = await params;
     const authHeader = request.headers.get('authorization');
 
-    const response = await fetch(`${BACKEND_URL}/merchants/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/merchants/${encodeURIComponent(id)}`, {
       method: 'GET',
       headers: {
         ...(authHeader ? { Authorization: authHeader } : {}),
@@ -36,7 +36,7 @@ export async function PUT(
     const body = await request.json();
     const authHeader = request.headers.get('authorization');
 
-    const response = await fetch(`${BACKEND_URL}/merchants/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/merchants/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

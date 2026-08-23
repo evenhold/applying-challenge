@@ -103,7 +103,7 @@ function DashboardContent() {
                     </td>
                     <td>{new Date(merchant.createdAt).toLocaleDateString()}</td>
                     <td>
-                      <Link href={`/merchants/${merchant.id}`} className="button button-small">
+                      <Link href={`/merchants/${encodeURIComponent(merchant.id)}`} className="button button-small">
                         Ver
                       </Link>
                     </td>
