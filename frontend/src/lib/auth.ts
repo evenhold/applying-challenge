@@ -2,10 +2,7 @@ const COGNITO_CONFIG = {
   userPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || '',
   clientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '',
   region: process.env.NEXT_PUBLIC_COGNITO_REGION || 'us-east-1',
-  endpoint: process.env.NEXT_PUBLIC_COGNITO_ENDPOINT || 'http://localhost:4566',
 };
-
-const COGNITO_ENDPOINT = COGNITO_CONFIG.endpoint;
 
 export interface AuthTokens {
   accessToken: string;
@@ -21,11 +18,10 @@ export interface AuthUser {
 }
 
 export async function login(email: string, password: string): Promise<AuthTokens> {
-  const response = await fetch(`${COGNITO_ENDPOINT}/`, {
+  const response = await fetch('/api/auth', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-amz-json-1.1',
-      'X-Amz-Target': 'AWSCognitoIdentityProviderService.InitiateAuth',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       AuthFlow: 'USER_PASSWORD_AUTH',
@@ -52,11 +48,10 @@ export async function login(email: string, password: string): Promise<AuthTokens
 }
 
 export async function refreshToken(refreshToken: string): Promise<AuthTokens> {
-  const response = await fetch(`${COGNITO_ENDPOINT}/`, {
+  const response = await fetch('/api/auth', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-amz-json-1.1',
-      'X-Amz-Target': 'AWSCognitoIdentityProviderService.InitiateAuth',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       AuthFlow: 'REFRESH_TOKEN_AUTH',
