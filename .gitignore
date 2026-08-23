@@ -46,3 +46,7 @@ coverage/
 # Misc
 *.tgz
 .cache/
+
+# Not versioned
+MEMORY.md
+CHANGELOG.md
