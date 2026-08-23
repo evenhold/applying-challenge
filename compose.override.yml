@@ -10,3 +10,7 @@ services:
     volumes:
       - ./backend/src:/app/src
     command: pnpm dev
+
+  worker:
+    volumes:
+      - ./backend/src:/app/src

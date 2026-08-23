@@ -59,6 +59,7 @@
 - [x] Manejo de DLQ (batch failures en handler)
 - [x] Use case enrichMerchant (`usecases/merchants/enrich.ts`)
 - [x] Tests: enricher handler (3) + enrich use case (4) = 7 tests
+- [x] SQS Worker local (`src/worker.ts` — pollea SQS cada 2s, procesa mensajes)
 
 ## Fase 6: Auth (Cognito) 🔄
 
@@ -131,4 +132,4 @@
 
 ---
 
-**Estado actual**: Fase 4, 5, 6, 7, 8 completadas. Fase 9 en progreso (84 tests unitarios). Siguiente: Fase 9 (Tests de integración) o Fase 10 (Terraform).
+**Estado actual**: Fase 4, 5, 6, 7, 8 completadas. Fase 9 en progreso (84 tests unitarios). Flujo end-to-end funcionando: Login → Crear → SQS → Enricher → ready_to_submit.
