@@ -12,6 +12,7 @@ export default defineConfig({
       exclude: [
         'src/**/*.test.ts',
         'src/server.ts',
+        'src/router.ts',
         'src/types/index.ts',
         'src/lib/dynamodb.ts',
         'src/lib/sqs.ts',

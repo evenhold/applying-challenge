@@ -1,7 +1,5 @@
 import { createServer, type IncomingMessage } from 'node:http';
-import { handler as healthHandler } from './handlers/health.js';
-import { handler as helloHandler } from './handlers/hello.js';
-import { handler as merchantsHandler } from './handlers/merchants.js';
+import { findHandler, getRegisteredRoutes } from './router.js';
 import type { LambdaEvent, LambdaResponse } from './types/index.js';
 
 const PORT = Number(process.env.PORT || 3001);
@@ -18,85 +16,61 @@ function parsePath(url: string): string {
   return queryIndex >= 0 ? url.substring(0, queryIndex) : url;
 }
 
-function extractPathParam(path: string, pattern: string): string | null {
-  const pathParts = path.split('/');
-  const patternParts = pattern.split('/');
-  if (pathParts.length !== patternParts.length) return null;
-  for (let i = 0; i < patternParts.length; i++) {
-    if (patternParts[i].startsWith(':')) continue;
-    if (pathParts[i] !== patternParts[i]) return null;
-  }
-  for (let i = 0; i < patternParts.length; i++) {
-    if (patternParts[i].startsWith(':')) return pathParts[i];
-  }
-  return null;
+async function readBody(req: IncomingMessage): Promise<string> {
+  let body = '';
+  for await (const chunk of req) body += chunk;
+  return body;
 }
 
-function toEvent(req: IncomingMessage, body: string): LambdaEvent {
-  const path = parsePath(req.url ?? '/');
-  let pathParameters: Record<string, string> | undefined;
-
-  const idParam = extractPathParam(path, '/merchants/:id');
-  if (idParam) {
-    pathParameters = { id: idParam };
-  }
-
+function toLambdaEvent(
+  req: IncomingMessage,
+  body: string,
+  params: Record<string, string>,
+): LambdaEvent {
   return {
     httpMethod: req.method ?? 'GET',
-    path,
+    path: parsePath(req.url ?? '/'),
     body,
     headers: Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, String(v)])),
-    pathParameters,
+    pathParameters: Object.keys(params).length > 0 ? params : undefined,
     queryStringParameters: {},
     requestContext: { authorizer: undefined },
   };
 }
 
-const staticRoutes: Record<string, (event: LambdaEvent) => Promise<LambdaResponse>> = {
-  '/health': healthHandler,
-  '/hello': helloHandler,
-};
+function notFoundResponse(): LambdaResponse {
+  return {
+    statusCode: 404,
+    headers: CORS_HEADERS,
+    body: JSON.stringify({ success: false, error: 'Not found' }),
+  };
+}
 
-const merchantMethods: Record<string, (event: LambdaEvent) => Promise<LambdaResponse>> = {
-  'POST /merchants': merchantsHandler,
-  'GET /merchants': merchantsHandler,
-  'GET /merchants/:id': merchantsHandler,
-  'PUT /merchants/:id': merchantsHandler,
-};
+function sendResponse(res: NodeJS.WritableStream, response: LambdaResponse): void {
+  const nodeRes = res as import('node:http').ServerResponse;
+  nodeRes.writeHead(response.statusCode, response.headers);
+  nodeRes.end(response.body);
+}
 
 const server = createServer(async (req, res) => {
-  let body = '';
-  for await (const chunk of req) body += chunk;
+  const path = parsePath(req.url ?? '/');
+  const match = findHandler(req.method ?? 'GET', path);
 
-  const event = toEvent(req, body);
-
-  let handler = staticRoutes[event.path];
-  if (!handler) {
-    const routeKey = `${event.httpMethod} ${event.path}`;
-    handler = merchantMethods[routeKey];
-    if (!handler && event.pathParameters) {
-      handler = merchantMethods[`${event.httpMethod} /merchants/:id`];
-    }
+  if (!match) {
+    sendResponse(res, notFoundResponse());
+    return;
   }
 
-  const response = handler
-    ? await handler(event)
-    : {
-        statusCode: 404,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ success: false, error: 'Not found' }),
-      };
+  const body = await readBody(req);
+  const event = toLambdaEvent(req, body, match.params);
+  const response = await match.handler(event);
 
-  res.writeHead(response.statusCode, response.headers);
-  res.end(response.body);
+  sendResponse(res, response);
 });
 
 server.listen(PORT, () => {
   console.log(`Backend dev server running on http://localhost:${PORT}`);
-  console.log('  GET  /health');
-  console.log('  GET  /hello');
-  console.log('  POST /merchants');
-  console.log('  GET  /merchants');
-  console.log('  GET  /merchants/:id');
-  console.log('  PUT  /merchants/:id');
+  for (const route of getRegisteredRoutes()) {
+    console.log(`  ${route.method.padEnd(7)} ${route.pattern}`);
+  }
 });
