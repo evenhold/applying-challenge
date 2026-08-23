@@ -14,38 +14,49 @@ interface Merchant {
   createdAt: string;
 }
 
+const POLL_INTERVAL_MS = 10_000;
+const PENDING_STATUSES = new Set(['pending_enrichment', 'enriching']);
+
 function DashboardContent() {
   const { user, tokens, logout } = useAuth();
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchMerchants = async () => {
-      try {
-        const response = await fetch('/api/merchants', {
-          headers: {
-            Authorization: `Bearer ${tokens?.accessToken}`,
-          },
-        });
+  const fetchMerchants = async () => {
+    try {
+      const response = await fetch('/api/merchants', {
+        headers: {
+          Authorization: `Bearer ${tokens?.accessToken}`,
+        },
+      });
 
-        if (!response.ok) {
-          throw new Error('Error al cargar merchants');
-        }
-
-        const data = await response.json();
-        setMerchants(data.data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error al cargar merchants');
-      } finally {
-        setIsLoading(false);
+      if (!response.ok) {
+        throw new Error('Error al cargar merchants');
       }
-    };
 
+      const data = await response.json();
+      setMerchants(data.data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar merchants');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (tokens?.accessToken) {
       fetchMerchants();
     }
   }, [tokens?.accessToken]);
+
+  useEffect(() => {
+    if (!tokens?.accessToken) return;
+    if (!merchants.some((m) => PENDING_STATUSES.has(m.status))) return;
+
+    const id = setInterval(fetchMerchants, POLL_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [tokens?.accessToken, merchants]);
 
   return (
     <main className="container">
