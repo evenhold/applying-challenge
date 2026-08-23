@@ -7,6 +7,8 @@
 - [x] FLOCI (AWS local emulator) funcionando
 - [x] Hot-reload con compose.override.yml
 - [x] Fix pnpm v11 (allowBuilds en pnpm-workspace.yaml)
+- [x] Docker base image: node:24-slim (glibc)
+- [x] Biome pinned to 2.5.8 (IDE compatibility)
 
 ## Fase 1: Frontend ✅
 
@@ -35,15 +37,18 @@
 - [x] Resilience (DLQ, reintentos, idempotencia)
 - [x] Cost estimation (~$18/mes serverless)
 
-## Fase 4: API Handlers ⏳
+## Fase 4: API Handlers ✅
 
-- [ ] `POST /merchants` — Crear merchant (validar RUC → SQS)
-- [ ] `GET /merchants` — Listar merchants del seller
-- [ ] `GET /merchants/:id` — Obtener merchant por ID
-- [ ] `PUT /merchants/:id` — Actualizar merchant (status, confirmar, etc.)
-- [ ] Input validation con schema (Zod)
-- [ ] Error handling consistente
-- [ ] Authorization server-side (sellerId del JWT === merchant.sellerId)
+- [x] `POST /merchants` — Crear merchant (validar RUC → SQS)
+- [x] `GET /merchants` — Listar merchants del seller
+- [x] `GET /merchants/:id` — Obtener merchant por ID
+- [x] `PUT /merchants/:id` — Actualizar merchant (status, confirmar, etc.)
+- [x] Input validation con Zod (createMerchantSchema, updateMerchantSchema)
+- [x] Error handling consistente (ZodError → 400, NotFoundError → 404)
+- [x] Authorization server-side (sellerId del JWT === merchant.sellerId)
+- [x] FP Architecture: usecases/ (funciones puras input → output)
+- [x] Router genérico con path params (router.ts)
+- [x] Coverage 90%+ (functions: 100%, branches: 92.3%)
 
 ## Fase 5: Lambda Enricher ⏳
 
@@ -74,10 +79,14 @@
 - [ ] Vista de merchant enriquecido
 - [ ] Confirmación de merchant
 
-## Fase 9: Tests Completos ⏳
+## Fase 9: Tests 🔄
 
-- [ ] Tests unitarios de handlers
-- [ ] Tests de lib (ruc-validator, dynamodb, sqs)
+- [x] Tests unitarios de handlers (merchants, health, hello)
+- [x] Tests de use cases (create, list, getById, update)
+- [x] Tests de schemas Zod (common, merchant)
+- [x] Tests de lib (ruc-validator)
+- [x] Tests de router (11 tests)
+- [x] Coverage configurado (v8, 90% threshold)
 - [ ] Tests de integración con FLOCI
 - [ ] Tests del frontend (componentes)
 
@@ -110,4 +119,4 @@
 
 ---
 
-**Estado actual**: Fase 3 completada, listos para Fase 4 (API Handlers)
+**Estado actual**: Fase 4 completada. Fase 9 en progreso (unitarios listos, pendiente integración con FLOCI y tests de frontend).
