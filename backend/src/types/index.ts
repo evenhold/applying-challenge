@@ -1,14 +1,9 @@
-// Domain types for Mini Onboarding
+import type { z } from 'zod';
+import type { documentTypeSchema, merchantStatusSchema } from '../schemas/common.js';
+import type { createMerchantSchema, updateMerchantSchema } from '../schemas/merchant.js';
 
-export type DocumentType = 'ruc' | 'dni' | 'ce';
-
-export type MerchantStatus =
-  | 'pending_enrichment'
-  | 'enriching'
-  | 'ready_to_submit'
-  | 'submitted'
-  | 'approved'
-  | 'rejected';
+export type DocumentType = z.infer<typeof documentTypeSchema>;
+export type MerchantStatus = z.infer<typeof merchantStatusSchema>;
 
 export interface Merchant {
   id: string;
@@ -24,19 +19,11 @@ export interface Merchant {
   updatedAt: string;
 }
 
-export interface CreateMerchantInput {
-  documentType: DocumentType;
-  documentNumber: string;
+export type CreateMerchantInput = z.infer<typeof createMerchantSchema> & {
   sellerId: string;
-}
+};
 
-export interface UpdateMerchantInput {
-  businessName?: string;
-  address?: string;
-  email?: string;
-  phone?: string;
-  status?: MerchantStatus;
-}
+export type UpdateMerchantInput = z.infer<typeof updateMerchantSchema>;
 
 export interface ApiResponse<T> {
   data: T;

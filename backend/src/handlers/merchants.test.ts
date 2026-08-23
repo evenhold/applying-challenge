@@ -119,7 +119,7 @@ describe('Merchants Handler', () => {
       expect(response.statusCode).toBe(400);
       const body = JSON.parse(response.body);
       expect(body.success).toBe(false);
-      expect(body.error).toBe('documentType and documentNumber are required');
+      expect(body.error).toContain('Required');
     });
 
     it('should return 400 when documentNumber is missing', async () => {
@@ -131,7 +131,7 @@ describe('Merchants Handler', () => {
       expect(response.statusCode).toBe(400);
       const body = JSON.parse(response.body);
       expect(body.success).toBe(false);
-      expect(body.error).toBe('documentType and documentNumber are required');
+      expect(body.error).toContain('Required');
     });
 
     it('should return 400 when documentType is invalid', async () => {
@@ -143,7 +143,9 @@ describe('Merchants Handler', () => {
       expect(response.statusCode).toBe(400);
       const body = JSON.parse(response.body);
       expect(body.success).toBe(false);
-      expect(body.error).toContain('documentType must be one of');
+      expect(body.error).toContain('ruc');
+      expect(body.error).toContain('dni');
+      expect(body.error).toContain('ce');
     });
 
     it('should return 201 and create merchant when request is valid', async () => {

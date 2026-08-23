@@ -1,9 +1,6 @@
-import {
-  type LambdaEvent,
-  type LambdaResponse,
-  NotFoundError,
-  ValidationError,
-} from '../types/index.js';
+import { ZodError } from 'zod';
+import { createMerchantSchema, updateMerchantSchema } from '../schemas/merchant.js';
+import { type LambdaEvent, type LambdaResponse, NotFoundError } from '../types/index.js';
 import { createMerchantUseCase } from '../usecases/merchants/create.js';
 import { getMerchantUseCase } from '../usecases/merchants/getById.js';
 import { listMerchantsUseCase } from '../usecases/merchants/list.js';
@@ -33,17 +30,24 @@ function jsonResponse(statusCode: number, data: unknown): LambdaResponse {
   };
 }
 
-function parseBody(event: LambdaEvent): Record<string, unknown> {
+function parseJsonBody(event: LambdaEvent): unknown {
   try {
     return JSON.parse(event.body || '{}');
   } catch {
-    throw new ValidationError('Invalid JSON');
+    throw new ZodError([
+      {
+        code: 'custom',
+        message: 'Invalid JSON',
+        path: [],
+      },
+    ]);
   }
 }
 
 function mapError(error: unknown): LambdaResponse {
-  if (error instanceof ValidationError) {
-    return jsonError(400, error.message);
+  if (error instanceof ZodError) {
+    const message = error.errors.map((e) => e.message).join(', ');
+    return jsonError(400, message);
   }
   if (error instanceof NotFoundError) {
     return jsonError(404, error.message);
@@ -53,21 +57,11 @@ function mapError(error: unknown): LambdaResponse {
 
 async function handleCreate(event: LambdaEvent, sellerId: string): Promise<LambdaResponse> {
   try {
-    const body = parseBody(event);
-
-    const { documentType, documentNumber } = body;
-    if (!documentType || !documentNumber) {
-      return jsonError(400, 'documentType and documentNumber are required');
-    }
-
-    const validTypes = ['ruc', 'dni', 'ce'];
-    if (!validTypes.includes(documentType as string)) {
-      return jsonError(400, `documentType must be one of: ${validTypes.join(', ')}`);
-    }
+    const raw = parseJsonBody(event);
+    const parsed = createMerchantSchema.parse(raw);
 
     const merchant = await createMerchantUseCase({
-      documentType: documentType as 'ruc' | 'dni' | 'ce',
-      documentNumber: documentNumber as string,
+      ...parsed,
       sellerId,
     });
     return jsonResponse(201, merchant);
@@ -97,10 +91,11 @@ async function handleUpdate(event: LambdaEvent, sellerId: string): Promise<Lambd
   const id = event.pathParameters?.id;
   if (!id) return jsonError(400, 'Merchant id is required');
 
-  const body = parseBody(event);
-
   try {
-    const merchant = await updateMerchantUseCase(id, sellerId, body);
+    const raw = parseJsonBody(event);
+    const parsed = updateMerchantSchema.parse(raw);
+
+    const merchant = await updateMerchantUseCase(id, sellerId, parsed);
     return jsonResponse(200, merchant);
   } catch (error) {
     return mapError(error);
