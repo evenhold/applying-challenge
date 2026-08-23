@@ -9,10 +9,11 @@ set -euo pipefail
 ENDPOINT="http://floci:4566"
 REGION="us-east-1"
 TABLE="merchants"
+AWS="docker compose run --rm awscli"
 
 echo "🔍 Verificando si la tabla $TABLE existe..."
 
-TABLE_STATUS=$(aws dynamodb describe-table \
+TABLE_STATUS=$($AWS dynamodb describe-table \
   --table-name "$TABLE" \
   --endpoint-url "$ENDPOINT" \
   --region "$REGION" \
@@ -26,7 +27,7 @@ fi
 
 echo "📝 Creando tabla $TABLE..."
 
-aws dynamodb create-table \
+$AWS dynamodb create-table \
   --table-name "$TABLE" \
   --attribute-definitions \
     AttributeName=PK,AttributeType=S \
@@ -61,7 +62,7 @@ aws dynamodb create-table \
   --region "$REGION"
 
 echo "⏳ Esperando que la tabla esté ACTIVE..."
-aws dynamodb wait table-exists \
+$AWS dynamodb wait table-exists \
   --table-name "$TABLE" \
   --endpoint-url "$ENDPOINT" \
   --region "$REGION"

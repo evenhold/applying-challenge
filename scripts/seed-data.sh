@@ -9,10 +9,11 @@ set -euo pipefail
 ENDPOINT="http://floci:4566"
 REGION="us-east-1"
 TABLE="merchants"
+AWS="docker compose run --rm awscli"
 
 echo "🔍 Verificando que la tabla $TABLE existe..."
 
-TABLE_STATUS=$(aws dynamodb describe-table \
+TABLE_STATUS=$($AWS dynamodb describe-table \
   --table-name "$TABLE" \
   --endpoint-url "$ENDPOINT" \
   --region "$REGION" \
@@ -28,7 +29,7 @@ echo "🌱 Insertando merchants de prueba..."
 echo ""
 
 # Merchant 1: RUC, pending_enrichment
-aws dynamodb put-item \
+$AWS dynamodb put-item \
   --table-name "$TABLE" \
   --endpoint-url "$ENDPOINT" \
   --region "$REGION" \
@@ -54,7 +55,7 @@ aws dynamodb put-item \
 echo "  ✅ MERCHANT#test-ruc-001  | RUC 20123456786 | pending_enrichment | seller-dev-001"
 
 # Merchant 2: DNI, ready_to_submit
-aws dynamodb put-item \
+$AWS dynamodb put-item \
   --table-name "$TABLE" \
   --endpoint-url "$ENDPOINT" \
   --region "$REGION" \
@@ -80,7 +81,7 @@ aws dynamodb put-item \
 echo "  ✅ MERCHANT#test-dni-002  | DNI 12345678    | ready_to_submit   | seller-dev-001"
 
 # Merchant 3: RUC, submitted (different seller)
-aws dynamodb put-item \
+$AWS dynamodb put-item \
   --table-name "$TABLE" \
   --endpoint-url "$ENDPOINT" \
   --region "$REGION" \
