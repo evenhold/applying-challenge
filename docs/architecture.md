@@ -1,6 +1,6 @@
 # Arquitectura — Mini Onboarding
 
-## Diagrama
+## Diagrama de Producción
 
 ```mermaid
 graph TB
@@ -32,7 +32,7 @@ graph TB
     end
 
     subgraph "External"
-        J[SUNAT Mock<br/>Delay 1-5s]
+        J[SUNAT API<br/>Real o Mock]
     end
 
     subgraph "Notification"
@@ -61,7 +61,139 @@ graph TB
     I -->|logs| L
 ```
 
-## Flujo Principal
+## Diagrama de Desarrollo (FLOCI)
+
+```mermaid
+graph TB
+    subgraph "Browser"
+        A[localhost:3000<br/>NextJS Dev Server]
+    end
+
+    subgraph "NextJS API Routes - CORS Proxy"
+        B[/api/auth<br/>Cognito proxy]
+        C[/api/merchants<br/>Backend proxy]
+        D[/api/merchants/id<br/>Backend proxy]
+    end
+
+    subgraph "FLOCI - AWS Local Emulator :4566"
+        E[Cognito<br/>User Pools]
+        F[DynamoDB<br/>merchants table]
+        G[SQS<br/>merchants-enrichment]
+        H[SES<br/>Mock]
+    end
+
+    subgraph "Backend :3001"
+        I[server.ts<br/>HTTP Dev Server]
+        J[handlers<br/>merchants, enricher]
+        K[usecases<br/>create, list, getById, update, enrich]
+        L[lib<br/>dynamodb, sqs, sunat, ses]
+    end
+
+    subgraph "Worker"
+        M[worker.ts<br/>SQS Poller<br/>cada 2s]
+    end
+
+    A -->|login| B
+    A -->|CRUD merchants| C
+    A -->|ver detalle| D
+    B -->|fwd request| E
+    C -->|fwd request| I
+    D -->|fwd request| I
+    I -->|validate JWT| E
+    I -->|read/write| F
+    I -->|enqueue| G
+    G -->|poll| M
+    M -->|enrichMerchant| K
+    K -->|query SUNAT Mock| L
+    K -->|update status| F
+    K -->|send email| H
+    J -->|read/write| F
+    J -->|enqueue| G
+```
+
+### Arquitectura de Desarrollo — Explicación
+
+El entorno de desarrollo replica la arquitectura de producción usando FLOCI como emulador de AWS. Cada componente de producción tiene su equivalente local:
+
+| Producción | Desarrollo | Puerto | Descripción |
+|------------|-----------|--------|-------------|
+| CloudFront + S3 | NextJS Dev Server | 3000 | Frontend con hot-reload |
+| API Gateway | API Routes `/api/*` | 3000 | Proxy CORS (same-origin) |
+| Cognito | FLOCI Cognito | 4566 | User Pool + Client + Users |
+| Lambda API | Backend Dev Server | 3001 | HTTP server con hot-reload |
+| Lambda Enricher | SQS Worker | — | Poller cada 2s |
+| DynamoDB | FLOCI DynamoDB | 4566 | Single table + 2 GSIs |
+| SQS | FLOCI SQS | 4566 | Cola merchants-enrichment |
+| SES | FLOCI SES | 4566 | Mock (no envía emails reales) |
+| SUNAT API | SUNAT Mock (`lib/sunat.ts`) | — | Delay 1-5s, datos fake |
+
+### CORS Strategy — API Routes Proxy
+
+El frontend nunca llama directamente a servicios externos. Todas las peticiones pasan por API Routes de Next.js que actúan como proxy server-side:
+
+```
+Browser → /api/auth (same-origin) → FLOCI Cognito (server-side)
+Browser → /api/merchants (same-origin) → Backend :3001 (server-side)
+Browser → /api/merchants/:id (same-origin) → Backend :3001 (server-side)
+```
+
+**¿Por qué?**
+- FLOCI no envía headers CORS → el browser bloquea las peticiones cross-origin
+- El Client ID de Cognito no debe exponerse al cliente (seguridad)
+- El proxy centraliza la configuración de endpoints
+
+### Data Flow Completo
+
+```mermaid
+sequenceDiagram
+    participant S as Seller (Browser)
+    participant F as Frontend /api/*
+    participant B as Backend :3001
+    participant D as DynamoDB
+    participant Q as SQS
+    participant W as Worker
+    participant C as Cognito
+
+    Note over S,C: 1. Login
+    S->>F: POST /api/auth {email, password}
+    F->>C: InitiateAuth (USER_PASSWORD_AUTH)
+    C-->>F: tokens (access, id, refresh)
+    F-->>S: tokens → localStorage
+
+    Note over S,D: 2. Crear Merchant
+    S->>F: POST /api/merchants {ruc, docNumber}
+    F->>B: POST /merchants (Bearer token)
+    B->>B: validate JWT (jose)
+    B->>B: validate RUC (módulo 11)
+    B->>D: PutItem (status: pending_enrichment)
+    B->>Q: SendMessage {merchantId, ruc}
+    B-->>F: 201 {merchant}
+    F-->>S: merchant creado
+
+    Note over Q,W: 3. Enriquecimiento (async)
+    Q->>W: poll (cada 2s)
+    W->>D: GetItem (merchant)
+    W->>W: SUNAT Mock (delay 1-5s)
+    W->>D: UpdateItem (status: ready_to_submit, businessName, address...)
+    W->>Q: DeleteMessage
+
+    Note over S,D: 4. Dashboard actualiza
+    S->>F: GET /api/merchants (cada 10s si hay pendientes)
+    F->>B: GET /merchants
+    B->>D: Query GSI1 (por seller)
+    B-->>F: merchants list
+    F-->>S: merchants con status actualizado
+
+    Note over S,D: 5. Confirmar Merchant
+    S->>F: PUT /api/merchants/:id {status: submitted}
+    F->>B: PUT /merchants/:id (Bearer token)
+    B->>B: verify sellerId === merchant.sellerId
+    B->>D: UpdateItem (status: submitted)
+    B-->>F: 200 {merchant actualizado}
+    F-->>S: merchant confirmado
+```
+
+## Flujo Principal (Producción)
 
 ### 1. Login del Seller
 
@@ -106,6 +238,61 @@ Lambda → verifica sellerId del JWT === merchant.sellerId
 Lambda → actualiza status: submitted
 Lambda → respuesta 200 OK
 ```
+
+## Setup de Desarrollo
+
+### Prerrequisitos
+
+- Docker Desktop
+- pnpm
+
+### Inicio rápido
+
+```bash
+# 1. Levantar FLOCI
+docker compose up floci -d
+
+# 2. Setup completo (Cognito + DynamoDB + SQS + seed data)
+make setup
+
+# 3. Levantar todos los servicios
+docker compose up -d
+
+# 4. Abrir http://localhost:3000/login
+#    Email: seller@test.com
+#    Password: Seller123!
+```
+
+### Servicios
+
+| Servicio | Puerto | Comando |
+|----------|--------|---------|
+| Frontend (NextJS) | 3000 | `docker compose up frontend` |
+| Backend (HTTP server) | 3001 | `docker compose up backend` |
+| FLOCI (AWS emulator) | 4566 | `docker compose up floci` |
+| Worker (SQS poller) | — | `docker compose up worker` |
+| AWS CLI | — | `docker compose run --rm awscli <cmd>` |
+
+### Comandos útiles
+
+```bash
+make setup         # Setup completo de FLOCI
+make db-setup      # Solo DynamoDB + SQS
+make db-seed       # Datos de prueba
+make db-shell      # Ver merchants en DynamoDB
+make cognito-setup # Solo Cognito
+make test-unit     # 84 tests unitarios
+make test-frontend # 10 tests frontend
+make test-integration # 11 tests integración (requiere backend corriendo)
+```
+
+### Datos de prueba
+
+| Campo | Valor |
+|-------|-------|
+| Email | `seller@test.com` |
+| Password | `Seller123!` |
+| Seller mock (AUTH_MOCK) | `seller-dev-001` |
 
 ## Servicios AWS Utilizados
 
