@@ -28,10 +28,10 @@ dev-floci: ## Levantar solo FLOCI
 # ==============================================================================
 
 test: ## Ejecutar todos los tests
-	docker compose exec backend pnpm test
+	docker compose run --rm backend pnpm test
 
 test-unit: ## Ejecutar solo unit tests
-	docker compose exec backend pnpm test:unit
+	docker compose run --rm backend pnpm test:unit
 
 test-integration: ## Ejecutar solo integration tests
 	docker compose exec backend pnpm test:integration
