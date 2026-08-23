@@ -35,8 +35,11 @@ test: ## Ejecutar todos los tests
 test-unit: ## Ejecutar solo unit tests
 	docker compose run --rm backend pnpm test:unit
 
-test-integration: ## Ejecutar solo integration tests
+test-integration: ## Ejecutar integration tests (requiere backend corriendo)
 	docker compose exec backend pnpm test:integration
+
+test-frontend: ## Ejecutar tests del frontend
+	docker compose run --rm frontend pnpm test
 
 test-e2e: ## Ejecutar solo e2e tests
 	docker compose exec backend pnpm test:e2e

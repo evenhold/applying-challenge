@@ -2,28 +2,27 @@
 
 ## Fase 0: Fundamentos ✅
 
-- [x] Docker Compose (frontend, backend, FLOCI)
-- [x] Dockerfiles multi-stage
-- [x] FLOCI (AWS local emulator) funcionando
+- [x] Docker Compose (frontend, backend, worker, FLOCI, awscli)
+- [x] Dockerfiles multi-stage (node:24-slim)
+- [x] FLOCI (AWS local emulator) con persistent mode
 - [x] Hot-reload con compose.override.yml
 - [x] Fix pnpm v11 (allowBuilds en pnpm-workspace.yaml)
-- [x] Docker base image: node:24-slim (glibc)
 - [x] Biome pinned to 2.5.8 (IDE compatibility)
+- [x] FLOCI_HOSTNAME=floci (QueueUrl consistente)
 
 ## Fase 1: Frontend ✅
 
 - [x] NextJS 16 con TypeScript 7
 - [x] Biome (lint + format)
 - [x] Vitest (tests unitarios)
-- [x] Páginas básicas: `/` (landing), `/login` (placeholder)
-- [x] Build estático (`output: 'export'`)
+- [x] Páginas: `/` (landing), `/login`, `/dashboard`, `/merchants/new`, `/merchants/[id]`
 - [x] Docker build exitoso
 
 ## Fase 2: Backend ✅
 
 - [x] Health check handler (`GET /health`)
 - [x] Hello world handler (`GET /hello`)
-- [x] Dev server local (`src/server.ts`)
+- [x] Dev server local (`src/server.ts`) con JWT validation (jose)
 - [x] Biome + Vitest + TypeScript
 - [x] Docker build exitoso
 
@@ -49,6 +48,7 @@
 - [x] FP Architecture: usecases/ (funciones puras input → output)
 - [x] Router genérico con path params (router.ts)
 - [x] Coverage 90%+ (functions: 100%, branches: 92.3%)
+- [x] API routes proxy en frontend (`/api/merchants`, `/api/merchants/[id]`)
 
 ## Fase 5: Lambda Enricher ✅
 
@@ -60,8 +60,9 @@
 - [x] Use case enrichMerchant (`usecases/merchants/enrich.ts`)
 - [x] Tests: enricher handler (3) + enrich use case (4) = 7 tests
 - [x] SQS Worker local (`src/worker.ts` — pollea SQS cada 2s, procesa mensajes)
+- [x] Worker siempre borra mensajes (previene loops infinitos)
 
-## Fase 6: Auth (Cognito) 🔄
+## Fase 6: Auth (Cognito) ✅
 
 - [x] User Pool en FLOCI (`mini-onboarding-sellers`)
 - [x] App Client (`mini-onboarding-web`)
@@ -72,6 +73,8 @@
 - [x] ProtectedRoute component
 - [x] Login page funcional
 - [x] Dashboard page con merchants
+- [x] Client ID server-side only (no expuesto al cliente)
+- [x] CORS fix: API route `/api/auth` como proxy a Cognito
 - [ ] API Gateway JWT Authorizer (Fase 10: Terraform)
 
 ## Fase 7: DynamoDB Local ✅
@@ -80,6 +83,9 @@
 - [x] Configurar GSIs (GSI1 por seller, GSI2 por estado)
 - [x] Datos de prueba (`scripts/seed-data.sh` — 3 merchants)
 - [x] Makefile targets: `db-setup`, `db-seed`, `db-shell`, `db-reset`
+- [x] SQS queue creation en setup script
+- [x] `make setup` — setup completo idempotente (Cognito + DynamoDB + SQS + seed)
+- [x] `scripts/setup-all.sh` — script unificado
 
 ## Fase 8: Frontend - Flujo Completo ✅
 
@@ -90,8 +96,11 @@
 - [x] Confirmación de merchant (botón submit en detail view)
 - [x] ProtectedRoute component
 - [x] Estilos CSS (status badges, dashboard, detail view)
+- [x] Auto-polling cada 10s cuando hay estados pendientes
+- [x] URL-encode de merchant IDs con `#` en links y API routes
+- [x] CORS fix: API routes `/api/merchants` y `/api/merchants/[id]`
 
-## Fase 9: Tests 🔄
+## Fase 9: Tests ✅
 
 - [x] Tests unitarios de handlers (merchants, health, hello)
 - [x] Tests de use cases (create, list, getById, update, enrich)
@@ -100,8 +109,9 @@
 - [x] Tests de router (11 tests)
 - [x] Tests de enricher (handler + use case = 7 tests)
 - [x] Coverage configurado (v8, 90% threshold)
-- [ ] Tests de integración con FLOCI
-- [ ] Tests del frontend (componentes)
+- [x] Tests de integración con FLOCI (10 tests: CRUD merchants)
+- [x] Tests del frontend (8 tests: auth service + 2 page tests)
+- [x] Total: 84 unit + 10 frontend + 11 integration = 105 tests
 
 ## Fase 10: Terraform ⏳
 
@@ -132,4 +142,4 @@
 
 ---
 
-**Estado actual**: Fase 4, 5, 6, 7, 8 completadas. Fase 9 en progreso (84 tests unitarios). Flujo end-to-end funcionando: Login → Crear → SQS → Enricher → ready_to_submit.
+**Estado actual**: Fase 0-9 completadas (105 tests). Flujo end-to-end funcionando. Siguiente: Fase 10 (Terraform).

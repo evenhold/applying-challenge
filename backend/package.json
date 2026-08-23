@@ -9,6 +9,7 @@
     "build": "tsc",
     "test": "vitest run",
     "test:unit": "vitest run src/",
+    "test:integration": "BACKEND_URL=http://backend:3001 vitest run tests/integration/",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "biome check src/",
