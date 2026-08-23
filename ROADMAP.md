@@ -65,11 +65,12 @@
 - [ ] Login en frontend
 - [ ] Protección de rutas
 
-## Fase 7: DynamoDB Local ⏳
+## Fase 7: DynamoDB Local ✅
 
-- [ ] Crear tabla en FLOCI
-- [ ] Configurar GSIs
-- [ ] Test de access patterns
+- [x] Crear tabla en FLOCI (`scripts/setup-dynamodb.sh`)
+- [x] Configurar GSIs (GSI1 por seller, GSI2 por estado)
+- [x] Datos de prueba (`scripts/seed-data.sh` — 3 merchants)
+- [x] Makefile targets: `db-setup`, `db-seed`, `db-shell`, `db-reset`
 
 ## Fase 8: Frontend - Flujo Completo ⏳
 
@@ -119,4 +120,4 @@
 
 ---
 
-**Estado actual**: Fase 4 completada. Fase 9 en progreso (unitarios listos, pendiente integración con FLOCI y tests de frontend).
+**Estado actual**: Fase 4 y 7 completadas. Fase 9 en progreso (unitarios listos, pendiente integración con FLOCI y tests de frontend). Siguiente: Fase 5 (Lambda Enricher) o Fase 6 (Auth/Cognito).

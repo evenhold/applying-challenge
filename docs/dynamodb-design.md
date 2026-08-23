@@ -258,3 +258,49 @@ pending_enrichment → enriching → ready_to_submit → submitted → approved
 - Cambiar a Provisioned + Auto Scaling
 - DynamoDB auto-scales GSIs automáticamente
 - Considerar DAX para caching si >10K QPS
+
+## Setup Local (FLOCI)
+
+### Crear tabla
+
+```bash
+make db-setup
+```
+
+Crea la tabla `merchants` con 2 GSIs (idempotente — no falla si ya existe).
+
+### Insertar datos de prueba
+
+```bash
+make db-seed
+```
+
+Inserta 3 merchants en diferentes estados:
+
+| ID | Documento | Estado | Seller |
+|----|-----------|--------|--------|
+| MERCHANT#test-ruc-001 | RUC 20123456786 | pending_enrichment | seller-dev-001 |
+| MERCHANT#test-dni-002 | DNI 12345678 | ready_to_submit | seller-dev-001 |
+| MERCHANT#test-ruc-003 | RUC 20987654321 | submitted | seller-dev-002 |
+
+### Verificar datos
+
+```bash
+# Scan completo
+make db-shell
+
+# Reset completo (borrar + recrear + seed)
+make db-reset
+```
+
+### Query por seller (ejemplo)
+
+```bash
+aws dynamodb query \
+  --table-name merchants \
+  --index-name GSI1 \
+  --key-condition-expression "GSI1PK = :sid" \
+  --expression-attribute-values '{":sid": {"S": "SELLER#seller-dev-001"}}' \
+  --endpoint-url http://localhost:4566 \
+  --region us-east-1
+```

@@ -1,5 +1,6 @@
 .PHONY: help dev dev-frontend dev-backend dev-floci \
        test test-unit test-integration test-e2e \
+       db-setup db-seed db-shell db-reset \
        infra-init infra-plan infra-apply infra-destroy infra-validate \
        deploy deploy-infra \
        logs shell-frontend shell-backend floci-health clean
@@ -38,6 +39,32 @@ test-integration: ## Ejecutar solo integration tests
 
 test-e2e: ## Ejecutar solo e2e tests
 	docker compose exec backend pnpm test:e2e
+
+# ==============================================================================
+# Base de datos (DynamoDB en FLOCI)
+# ==============================================================================
+
+db-setup: ## Crear tabla merchants + GSIs en FLOCI
+	bash scripts/setup-dynamodb.sh
+
+db-seed: ## Insertar merchants de prueba en FLOCI
+	bash scripts/seed-data.sh
+
+db-shell: ## Ver todos los merchants (scan)
+	@aws dynamodb scan \
+		--table-name merchants \
+		--endpoint-url http://localhost:4566 \
+		--region us-east-1 \
+		--output table 2>/dev/null || echo "Ejecuta 'make db-setup' primero"
+
+db-reset: ## Eliminar y recrear tabla (WARNING: borra datos)
+	@aws dynamodb delete-table \
+		--table-name merchants \
+		--endpoint-url http://localhost:4566 \
+		--region us-east-1 2>/dev/null || true
+	@echo "🗑️  Tabla eliminada."
+	bash scripts/setup-dynamodb.sh
+	bash scripts/seed-data.sh
 
 # ==============================================================================
 # Infraestructura
