@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import { ProtectedRoute } from '../../../components/ProtectedRoute';
+import { api } from '../../../lib/api';
 
 function NewMerchantContent() {
   const [documentType, setDocumentType] = useState<'ruc' | 'dni' | 'ce'>('ruc');
@@ -19,23 +20,7 @@ function NewMerchantContent() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/merchants', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${tokens?.accessToken}`,
-        },
-        body: JSON.stringify({
-          documentType,
-          documentNumber,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Error al crear merchant');
-      }
-
+      await api.post('/merchants', { documentType, documentNumber }, tokens?.accessToken);
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear merchant');

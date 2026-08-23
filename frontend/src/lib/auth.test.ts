@@ -3,6 +3,7 @@ import { login, parseJwtPayload, isTokenExpired } from '../../src/lib/auth';
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  vi.stubEnv('NEXT_PUBLIC_COGNITO_URL', 'http://localhost:3000/api');
 });
 
 describe('Auth Service', () => {
@@ -28,7 +29,7 @@ describe('Auth Service', () => {
       expect(tokens.idToken).toBe('mock-id-token');
       expect(tokens.refreshToken).toBe('mock-refresh-token');
       expect(tokens.expiresIn).toBe(3600);
-      expect(fetch).toHaveBeenCalledWith('/api/auth', expect.objectContaining({
+      expect(fetch).toHaveBeenCalledWith('http://localhost:3000/api/auth', expect.objectContaining({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       }));

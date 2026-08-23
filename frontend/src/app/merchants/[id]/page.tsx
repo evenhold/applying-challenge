@@ -4,20 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import { ProtectedRoute } from '../../../components/ProtectedRoute';
-
-interface Merchant {
-  id: string;
-  documentType: string;
-  documentNumber: string;
-  businessName: string;
-  address: string;
-  email: string;
-  phone: string;
-  sellerId: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { api, type Merchant } from '../../../lib/api';
 
 function MerchantDetailContent() {
   const params = useParams();
@@ -33,18 +20,8 @@ function MerchantDetailContent() {
   useEffect(() => {
     const fetchMerchant = async () => {
       try {
-        const response = await fetch(`/api/merchants/${merchantId}`, {
-          headers: {
-            Authorization: `Bearer ${tokens?.accessToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Error al cargar merchant');
-        }
-
-        const data = await response.json();
-        setMerchant(data.data);
+        const data = await api.get<Merchant>(`/merchants/${merchantId}`, tokens?.accessToken);
+        setMerchant(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar merchant');
       } finally {
@@ -64,23 +41,12 @@ function MerchantDetailContent() {
     setError('');
 
     try {
-      const response = await fetch(`/api/merchants/${merchantId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${tokens?.accessToken}`,
-        },
-        body: JSON.stringify({
-          status: 'submitted',
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Error al confirmar merchant');
-      }
-
-      setMerchant({ ...merchant, status: 'submitted' });
+      const updated = await api.put<Merchant>(
+        `/merchants/${merchantId}`,
+        { status: 'submitted' },
+        tokens?.accessToken,
+      );
+      setMerchant(updated);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al confirmar merchant');
     } finally {

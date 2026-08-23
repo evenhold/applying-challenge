@@ -36,7 +36,11 @@ export async function enrichMerchantUseCase(message: EnrichmentMessage): Promise
 
   let emailSent = false;
   try {
-    const email = buildEnrichmentCompleteEmail(sunatData.businessName, documentNumber);
+    const email = buildEnrichmentCompleteEmail(
+      enriched.email || enriched.sellerId,
+      sunatData.businessName,
+      documentNumber,
+    );
     await sendEmail(email);
     emailSent = true;
   } catch {

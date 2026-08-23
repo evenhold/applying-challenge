@@ -37,11 +37,12 @@ export async function sendEmail(params: EmailParams): Promise<void> {
 }
 
 export function buildEnrichmentCompleteEmail(
+  to: string,
   businessName: string,
   documentNumber: string,
 ): EmailParams {
   return {
-    to: 'seller@mini-onboarding.local',
+    to,
     subject: `Merchant ${businessName} - Datos enriquecidos`,
     htmlBody: `
       <h1>Datos enriquecidos correctamente</h1>

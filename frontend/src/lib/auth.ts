@@ -1,3 +1,5 @@
+const COGNITO_URL = process.env.NEXT_PUBLIC_COGNITO_URL || '';
+
 export interface AuthTokens {
   accessToken: string;
   idToken: string;
@@ -12,7 +14,7 @@ export interface AuthUser {
 }
 
 export async function login(email: string, password: string): Promise<AuthTokens> {
-  const response = await fetch('/api/auth', {
+  const response = await fetch(`${COGNITO_URL}/auth`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -33,7 +35,7 @@ export async function login(email: string, password: string): Promise<AuthTokens
 }
 
 export async function refreshToken(refreshToken: string): Promise<AuthTokens> {
-  const response = await fetch('/api/auth', {
+  const response = await fetch(`${COGNITO_URL}/auth`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken }),

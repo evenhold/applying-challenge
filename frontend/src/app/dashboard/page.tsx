@@ -4,15 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
-
-interface Merchant {
-  id: string;
-  documentType: string;
-  documentNumber: string;
-  businessName: string;
-  status: string;
-  createdAt: string;
-}
+import { api, type Merchant } from '../../lib/api';
 
 const POLL_INTERVAL_MS = 10_000;
 const PENDING_STATUSES = new Set(['pending_enrichment', 'enriching']);
@@ -25,18 +17,8 @@ function DashboardContent() {
 
   const fetchMerchants = async () => {
     try {
-      const response = await fetch('/api/merchants', {
-        headers: {
-          Authorization: `Bearer ${tokens?.accessToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al cargar merchants');
-      }
-
-      const data = await response.json();
-      setMerchants(data.data || []);
+      const data = await api.get<Merchant[]>('/merchants', tokens?.accessToken);
+      setMerchants(data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar merchants');
     } finally {
