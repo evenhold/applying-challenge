@@ -80,13 +80,15 @@
 - [x] Datos de prueba (`scripts/seed-data.sh` — 3 merchants)
 - [x] Makefile targets: `db-setup`, `db-seed`, `db-shell`, `db-reset`
 
-## Fase 8: Frontend - Flujo Completo ⏳
+## Fase 8: Frontend - Flujo Completo ✅
 
-- [ ] Login page funcional
-- [ ] Dashboard de merchants
-- [ ] Formulario de creación de merchant
-- [ ] Vista de merchant enriquecido
-- [ ] Confirmación de merchant
+- [x] Login page funcional (con Cognito real)
+- [x] Dashboard de merchants (con botón crear + ver)
+- [x] Formulario de creación de merchant (`/merchants/new`)
+- [x] Vista de merchant enriquecido (`/merchants/[id]`)
+- [x] Confirmación de merchant (botón submit en detail view)
+- [x] ProtectedRoute component
+- [x] Estilos CSS (status badges, dashboard, detail view)
 
 ## Fase 9: Tests 🔄
 
@@ -129,4 +131,4 @@
 
 ---
 
-**Estado actual**: Fase 4, 5, 7 completadas. Fase 6 en progreso (Cognito configurado, login funcional). Fase 9 en progreso (84 tests unitarios). Siguiente: Completar Fase 6 + 8 (Frontend) o Fase 10 (Terraform).
+**Estado actual**: Fase 4, 5, 6, 7, 8 completadas. Fase 9 en progreso (84 tests unitarios). Siguiente: Fase 9 (Tests de integración) o Fase 10 (Terraform).

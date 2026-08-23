@@ -114,3 +114,189 @@ body {
 .form-footer a:hover {
   color: var(--foreground);
 }
+
+/* Dashboard styles */
+.dashboard {
+  width: 100%;
+  max-width: 900px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.merchants-section {
+  margin-top: 1rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.merchants-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.merchants-table th,
+.merchants-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.merchants-table th {
+  background: var(--input);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.merchants-table tr:hover {
+  background: var(--input);
+}
+
+/* Button variants */
+.button-secondary {
+  background: var(--input);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  width: auto;
+}
+
+.button-secondary:hover {
+  background: var(--border);
+}
+
+.button-small {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  width: auto;
+}
+
+.button-primary {
+  background: var(--primary);
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-pending_enrichment {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-enriching {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-ready_to_submit {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-submitted {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.status-approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Merchant detail styles */
+.merchant-detail {
+  width: 100%;
+  max-width: 600px;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.merchant-info {
+  background: var(--input);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.info-row {
+  display: flex;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row label {
+  width: 150px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.info-row span {
+  flex: 1;
+}
+
+.actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Error message */
+.error-message {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Form select */
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  background: var(--input);
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}

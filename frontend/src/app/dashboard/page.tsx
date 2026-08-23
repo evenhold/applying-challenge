@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 
@@ -60,14 +61,19 @@ function DashboardContent() {
         </header>
 
         <section className="merchants-section">
-          <h2>Mis Merchants</h2>
+          <div className="section-header">
+            <h2>Mis Merchants</h2>
+            <Link href="/merchants/new" className="button button-primary">
+              + Crear Merchant
+            </Link>
+          </div>
 
           {isLoading && <p>Cargando merchants...</p>}
 
           {error && <div className="error-message">{error}</div>}
 
           {!isLoading && merchants.length === 0 && (
-            <p>No tienes merchants registrados.</p>
+            <p>No tienes merchants registrados. <Link href="/merchants/new">Crear uno</Link></p>
           )}
 
           {!isLoading && merchants.length > 0 && (
@@ -80,17 +86,27 @@ function DashboardContent() {
                   <th>Nombre</th>
                   <th>Estado</th>
                   <th>Creado</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {merchants.map((merchant) => (
                   <tr key={merchant.id}>
-                    <td>{merchant.id}</td>
+                    <td>{merchant.id.substring(0, 15)}...</td>
                     <td>{merchant.documentType}</td>
                     <td>{merchant.documentNumber}</td>
                     <td>{merchant.businessName || '-'}</td>
-                    <td>{merchant.status}</td>
+                    <td>
+                      <span className={`status-badge status-${merchant.status}`}>
+                        {merchant.status}
+                      </span>
+                    </td>
                     <td>{new Date(merchant.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <Link href={`/merchants/${merchant.id}`} className="button button-small">
+                        Ver
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
