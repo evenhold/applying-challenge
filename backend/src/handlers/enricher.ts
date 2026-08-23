@@ -1,10 +1,10 @@
-import type { EnrichmentMessage } from '../../lib/sqs.js';
+import type { EnrichmentMessage } from '../lib/sqs.js';
 import type {
   SQSBatchItemFailure,
   SQSBatchResponse,
   SQSEvent,
   SQSRecord,
-} from '../../types/index.js';
+} from '../types/index.js';
 import { enrichMerchantUseCase } from '../usecases/merchants/enrich.js';
 
 export async function handler(event: SQSEvent): Promise<SQSBatchResponse> {

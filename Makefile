@@ -1,6 +1,7 @@
 .PHONY: help dev dev-frontend dev-backend dev-floci \
        test test-unit test-integration test-e2e \
        db-setup db-seed db-shell db-reset \
+       cognito-setup \
        infra-init infra-plan infra-apply infra-destroy infra-validate \
        deploy deploy-infra \
        logs shell-frontend shell-backend floci-health clean
@@ -65,6 +66,13 @@ db-reset: ## Eliminar y recrear tabla (WARNING: borra datos)
 	@echo "🗑️  Tabla eliminada."
 	bash scripts/setup-dynamodb.sh
 	bash scripts/seed-data.sh
+
+# ==============================================================================
+# Autenticación (Cognito en FLOCI)
+# ==============================================================================
+
+cognito-setup: ## Crear User Pool + App Client + Test User en FLOCI
+	bash scripts/setup-cognito.sh
 
 # ==============================================================================
 # Infraestructura

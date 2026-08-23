@@ -60,12 +60,18 @@
 - [x] Use case enrichMerchant (`usecases/merchants/enrich.ts`)
 - [x] Tests: enricher handler (3) + enrich use case (4) = 7 tests
 
-## Fase 6: Auth (Cognito) ⏳
+## Fase 6: Auth (Cognito) 🔄
 
-- [ ] Configuración de Cognito User Pool
-- [ ] API Gateway JWT Authorizer
-- [ ] Login en frontend
-- [ ] Protección de rutas
+- [x] User Pool en FLOCI (`mini-onboarding-sellers`)
+- [x] App Client (`mini-onboarding-web`)
+- [x] Test User (`seller@test.com` / `Seller123!`)
+- [x] JWT validation en backend (jose library)
+- [x] Frontend auth service (`lib/auth.ts`)
+- [x] AuthContext para React state
+- [x] ProtectedRoute component
+- [x] Login page funcional
+- [x] Dashboard page con merchants
+- [ ] API Gateway JWT Authorizer (Fase 10: Terraform)
 
 ## Fase 7: DynamoDB Local ✅
 
@@ -123,4 +129,4 @@
 
 ---
 
-**Estado actual**: Fase 4, 5 y 7 completadas. Fase 9 en progreso (84 tests unitarios, pendiente integración con FLOCI y tests de frontend). Siguiente: Fase 6 (Auth/Cognito) o Fase 8 (Frontend).
+**Estado actual**: Fase 4, 5, 7 completadas. Fase 6 en progreso (Cognito configurado, login funcional). Fase 9 en progreso (84 tests unitarios). Siguiente: Completar Fase 6 + 8 (Frontend) o Fase 10 (Terraform).

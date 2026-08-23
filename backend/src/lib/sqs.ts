@@ -1,4 +1,5 @@
 import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import type { DocumentType } from '../types/index.js';
 
 const client = new SQSClient({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -10,14 +11,14 @@ const QUEUE_URL =
 
 export interface EnrichmentMessage {
   merchantId: string;
-  documentType: string;
+  documentType: DocumentType;
   documentNumber: string;
   timestamp: string;
 }
 
 export async function sendEnrichmentMessage(
   merchantId: string,
-  documentType: string,
+  documentType: DocumentType,
   documentNumber: string,
 ): Promise<void> {
   const message: EnrichmentMessage = {

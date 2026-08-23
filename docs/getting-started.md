@@ -119,6 +119,73 @@ aws --endpoint-url=http://localhost:4566 dynamodb list-tables
 | `SES_SENDER_EMAIL` | Email remitente SES | `noreply@mini-onboarding.local` |
 | `DYNAMODB_TABLE` | Nombre de la tabla DynamoDB | `merchants` |
 | `AUTH_MOCK` | Mock auth para dev local | `true` |
+| `COGNITO_USER_POOL_ID` | ID del User Pool Cognito | `us-east-1_11bb0fdf1` |
+| `COGNITO_CLIENT_ID` | ID del App Client | `67e7f9268a5347ff88e18d23e4` |
+| `COGNITO_REGION` | Región de Cognito | `us-east-1` |
+
+---
+
+## Autenticación (Cognito)
+
+### Setup de Cognito en FLOCI
+
+```bash
+# Crear User Pool + App Client + Test User
+make cognito-setup
+```
+
+Esto crea:
+- **User Pool**: `mini-onboarding-sellers`
+- **App Client**: `mini-onboarding-web`
+- **Test User**: `seller@test.com`
+
+### Credenciales de prueba
+
+| Campo | Valor |
+|-------|-------|
+| **Email** | `seller@test.com` |
+| **Password** | `Seller123!` |
+
+### Login via API
+
+```bash
+# Obtener token de acceso
+curl -X POST http://localhost:4566 \
+  -H "Content-Type: application/x-amz-json-1.1" \
+  -H "X-Amz-Target: AWSCognitoIdentityProviderService.InitiateAuth" \
+  -d '{
+    "AuthFlow": "USER_PASSWORD_AUTH",
+    "ClientId": "67e7f9268a5347ff88e18d23e4",
+    "AuthParameters": {
+      "USERNAME": "seller@test.com",
+      "PASSWORD": "Seller123!"
+    }
+  }'
+```
+
+### Login via Frontend
+
+1. Abrir `http://localhost:3000/login`
+2. Ingresar email: `seller@test.com`
+3. Ingresar password: `Seller123!`
+4. Click "Entrar"
+5. Redirige al Dashboard
+
+### Flujo de autenticación
+
+```
+Frontend → Cognito (USER_PASSWORD_AUTH) → Tokens
+    ↓
+Frontend guarda tokens en localStorage
+    ↓
+Frontend envía Authorization: Bearer <token> al Backend
+    ↓
+Backend valida JWT contra Cognito JWKS
+    ↓
+Backend extrae sellerId del token (claims.sub)
+    ↓
+Backend retorna merchants del seller autenticado
+```
 
 ---
 
