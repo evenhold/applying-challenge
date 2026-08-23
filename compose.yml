@@ -30,6 +30,17 @@ services:
     networks:
       - app-net
 
+  awscli:
+    image: amazon/aws-cli:latest
+    environment:
+      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    networks:
+      - app-net
+    entrypoint: ["aws"]
+
   floci:
     image: floci/floci:latest
     ports:

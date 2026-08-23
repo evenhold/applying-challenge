@@ -6,7 +6,7 @@ set -euo pipefail
 # Ejecutar: make db-setup
 # =============================================================================
 
-ENDPOINT="http://localhost:4566"
+ENDPOINT="http://floci:4566"
 REGION="us-east-1"
 TABLE="merchants"
 

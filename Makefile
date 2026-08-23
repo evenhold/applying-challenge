@@ -51,16 +51,16 @@ db-seed: ## Insertar merchants de prueba en FLOCI
 	bash scripts/seed-data.sh
 
 db-shell: ## Ver todos los merchants (scan)
-	@aws dynamodb scan \
+	@docker compose run --rm awscli dynamodb scan \
 		--table-name merchants \
-		--endpoint-url http://localhost:4566 \
+		--endpoint-url http://floci:4566 \
 		--region us-east-1 \
 		--output table 2>/dev/null || echo "Ejecuta 'make db-setup' primero"
 
 db-reset: ## Eliminar y recrear tabla (WARNING: borra datos)
-	@aws dynamodb delete-table \
+	@docker compose run --rm awscli dynamodb delete-table \
 		--table-name merchants \
-		--endpoint-url http://localhost:4566 \
+		--endpoint-url http://floci:4566 \
 		--region us-east-1 2>/dev/null || true
 	@echo "🗑️  Tabla eliminada."
 	bash scripts/setup-dynamodb.sh
