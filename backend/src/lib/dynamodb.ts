@@ -4,6 +4,7 @@ import {
   GetCommand,
   PutCommand,
   QueryCommand,
+  UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
 import type { CreateMerchantInput, Merchant, UpdateMerchantInput } from '../types/index.js';
 
@@ -109,4 +110,41 @@ export async function updateMerchant(
   );
 
   return updated;
+}
+
+export async function enrichMerchant(
+  id: string,
+  data: {
+    businessName: string;
+    address: string;
+    email: string;
+    phone: string;
+  },
+): Promise<Merchant | null> {
+  const existing = await getMerchant(id);
+  if (!existing) return null;
+
+  const now = new Date().toISOString();
+
+  await docClient.send(
+    new UpdateCommand({
+      TableName: TABLE_NAME,
+      Key: { PK: id, SK: 'PROFILE' },
+      UpdateExpression:
+        'SET businessName = :bn, address = :addr, email = :em, phone = :ph, #st = :st, updatedAt = :now, GSI2PK = :gsi2pk, GSI2SK = :gsi2sk',
+      ExpressionAttributeNames: { '#st': 'status' },
+      ExpressionAttributeValues: {
+        ':bn': data.businessName,
+        ':addr': data.address,
+        ':em': data.email,
+        ':ph': data.phone,
+        ':st': 'ready_to_submit',
+        ':now': now,
+        ':gsi2pk': 'STATUS#ready_to_submit',
+        ':gsi2sk': now,
+      },
+    }),
+  );
+
+  return { ...existing, ...data, status: 'ready_to_submit', updatedAt: now };
 }

@@ -74,3 +74,23 @@ export interface LambdaResponse {
   headers: Record<string, string>;
   body: string;
 }
+
+export interface SQSRecord {
+  messageId: string;
+  receiptHandle: string;
+  body: string;
+  attributes: Record<string, string>;
+  messageAttributes: Record<string, { dataType: string; stringValue?: string }>;
+}
+
+export interface SQSEvent {
+  Records: SQSRecord[];
+}
+
+export interface SQSBatchItemFailure {
+  itemIdentifier: string;
+}
+
+export interface SQSBatchResponse {
+  batchItemFailures: SQSBatchItemFailure[];
+}

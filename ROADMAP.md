@@ -50,13 +50,15 @@
 - [x] Router genérico con path params (router.ts)
 - [x] Coverage 90%+ (functions: 100%, branches: 92.3%)
 
-## Fase 5: Lambda Enricher ⏳
+## Fase 5: Lambda Enricher ✅
 
-- [ ] SQS consumer para enrichment
-- [ ] SUNAT Mock (delay 1-5s, devuelve datos fake)
-- [ ] Actualización de DynamoDB tras enrichment
-- [ ] Envío de email vía SES
-- [ ] Manejo de DLQ
+- [x] SQS consumer para enrichment (`handlers/enricher.ts`)
+- [x] SUNAT Mock con delay 1-5s (`lib/sunat.ts`)
+- [x] Actualización de DynamoDB tras enrichment (`lib/dynamodb.ts:enrichMerchant`)
+- [x] Envío de email vía SES (`lib/ses.ts`)
+- [x] Manejo de DLQ (batch failures en handler)
+- [x] Use case enrichMerchant (`usecases/merchants/enrich.ts`)
+- [x] Tests: enricher handler (3) + enrich use case (4) = 7 tests
 
 ## Fase 6: Auth (Cognito) ⏳
 
@@ -83,10 +85,11 @@
 ## Fase 9: Tests 🔄
 
 - [x] Tests unitarios de handlers (merchants, health, hello)
-- [x] Tests de use cases (create, list, getById, update)
+- [x] Tests de use cases (create, list, getById, update, enrich)
 - [x] Tests de schemas Zod (common, merchant)
 - [x] Tests de lib (ruc-validator)
 - [x] Tests de router (11 tests)
+- [x] Tests de enricher (handler + use case = 7 tests)
 - [x] Coverage configurado (v8, 90% threshold)
 - [ ] Tests de integración con FLOCI
 - [ ] Tests del frontend (componentes)
@@ -120,4 +123,4 @@
 
 ---
 
-**Estado actual**: Fase 4 y 7 completadas. Fase 9 en progreso (unitarios listos, pendiente integración con FLOCI y tests de frontend). Siguiente: Fase 5 (Lambda Enricher) o Fase 6 (Auth/Cognito).
+**Estado actual**: Fase 4, 5 y 7 completadas. Fase 9 en progreso (84 tests unitarios, pendiente integración con FLOCI y tests de frontend). Siguiente: Fase 6 (Auth/Cognito) o Fase 8 (Frontend).
