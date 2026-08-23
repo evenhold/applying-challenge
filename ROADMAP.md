@@ -113,8 +113,9 @@
 - [x] Tests del frontend (8 tests: auth service + 2 page tests)
 - [x] Total: 84 unit + 10 frontend + 11 integration = 105 tests
 
-## Fase 10: Terraform ⏳
+## Fase 10: Terraform ⏸️ (en pausa)
 
+- [ ] Decidir: 1 ambiente o 2 (dev + prod)
 - [ ] Módulo DynamoDB
 - [ ] Módulo Lambda
 - [ ] Módulo API Gateway
@@ -124,6 +125,8 @@
 - [ ] Módulo S3 + CloudFront
 - [ ] Módulo WAF
 - [ ] Módulo observability (CloudWatch, X-Ray)
+
+> **Nota**: Ver `docs/production-checklist.md` para los cambios necesarios DEV→PROD.
 
 ## Fase 11: Deploy Final ⏳
 
@@ -142,4 +145,4 @@
 
 ---
 
-**Estado actual**: Fase 0-9 completadas (105 tests). Flujo end-to-end funcionando. Siguiente: Fase 10 (Terraform).
+**Estado actual**: Fase 0-9 completadas (105 tests). Flujo end-to-end funcionando. Fase 10 (Terraform) en pausa — ver `docs/production-checklist.md`.
