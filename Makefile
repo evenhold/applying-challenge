@@ -1,6 +1,6 @@
 .PHONY: help dev dev-frontend dev-backend dev-floci \
        test test-unit test-integration test-e2e \
-       db-setup db-seed db-shell db-reset \
+       setup db-setup db-seed db-shell db-reset \
        cognito-setup \
        infra-init infra-plan infra-apply infra-destroy infra-validate \
        deploy deploy-infra \
@@ -70,6 +70,9 @@ db-reset: ## Eliminar y recrear tabla (WARNING: borra datos)
 # ==============================================================================
 # Autenticación (Cognito en FLOCI)
 # ==============================================================================
+
+setup: ## Setup completo: Cognito + DynamoDB + SQS + datos de prueba
+	bash scripts/setup-all.sh
 
 cognito-setup: ## Crear User Pool + App Client + Test User en FLOCI
 	bash scripts/setup-cognito.sh
