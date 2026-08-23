@@ -1,0 +1,24 @@
+{
+  "name": "mini-onboarding-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --write src/",
+    "format": "biome format --write src/"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.10",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^7.0.0",
+    "vitest": "^3.0.0"
+  }
+}

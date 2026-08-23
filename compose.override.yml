@@ -1,0 +1,12 @@
+services:
+  frontend:
+    build:
+      target: base
+    volumes:
+      - ./frontend/src:/app/src
+    command: pnpm dev
+
+  backend:
+    volumes:
+      - ./backend/src:/app/src
+    command: pnpm dev

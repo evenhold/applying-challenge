@@ -1,0 +1,16 @@
+FROM node:24-alpine AS base
+ENV CI=true
+RUN corepack enable && corepack prepare pnpm@latest --activate
+WORKDIR /app
+
+# Install dependencies
+COPY backend/package.json backend/pnpm-lock.yaml* backend/pnpm-workspace.yaml ./
+RUN pnpm install --no-frozen-lockfile
+
+# Copy source
+COPY backend/ .
+
+# Build
+RUN pnpm build || true
+
+CMD ["node", "src/handlers/health.js"]

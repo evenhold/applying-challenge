@@ -1,0 +1,19 @@
+FROM hashicorp/terraform:latest AS terraform
+FROM amazon/aws-cli:latest AS aws-cli
+
+# ==============================================================================
+# Imagen final con Terraform + AWS CLI
+# ==============================================================================
+FROM alpine:3.20
+
+RUN apk add --no-cache curl bash jq
+
+# Copiar terraform desde el stage de terraform
+COPY --from=terraform /bin/terraform /usr/local/bin/terraform
+
+# Copiar aws-cli desde el stage de aws-cli
+COPY --from=aws-cli /usr/local/bin/aws /usr/local/bin/aws
+
+WORKDIR /infra
+
+ENTRYPOINT ["terraform"]
