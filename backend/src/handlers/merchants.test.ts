@@ -91,6 +91,7 @@ describe('Merchants Handler', () => {
 
   describe('POST /merchants', () => {
     it('should return 401 when seller is not authenticated', async () => {
+      vi.stubEnv('AUTH_MOCK', 'false');
       const event = createEvent({ requestContext: {} });
       const response = await handler(event);
 
@@ -98,6 +99,7 @@ describe('Merchants Handler', () => {
       const body = JSON.parse(response.body);
       expect(body.success).toBe(false);
       expect(body.error).toBe('Unauthorized');
+      vi.stubEnv('AUTH_MOCK', 'true');
     });
 
     it('should return 400 when body is invalid JSON', async () => {

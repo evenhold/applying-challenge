@@ -13,7 +13,8 @@ const CORS_HEADERS = {
 
 function parsePath(url: string): string {
   const queryIndex = url.indexOf('?');
-  return queryIndex >= 0 ? url.substring(0, queryIndex) : url;
+  const path = queryIndex >= 0 ? url.substring(0, queryIndex) : url;
+  return decodeURIComponent(path);
 }
 
 async function readBody(req: IncomingMessage): Promise<string> {

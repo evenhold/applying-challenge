@@ -117,6 +117,100 @@ aws --endpoint-url=http://localhost:4566 dynamodb list-tables
 | `AWS_SECRET_ACCESS_KEY` | Secret key (fake para local) | `test` |
 | `NEXT_PUBLIC_API_URL` | URL del API para el frontend | `http://localhost:4566` |
 | `SES_SENDER_EMAIL` | Email remitente SES | `noreply@mini-onboarding.local` |
+| `DYNAMODB_TABLE` | Nombre de la tabla DynamoDB | `merchants` |
+| `AUTH_MOCK` | Mock auth para dev local | `true` |
+
+---
+
+## Testing API Endpoints
+
+### Setup inicial
+
+```bash
+# 1. Levantar FLOCI
+docker compose up floci -d
+
+# 2. Crear tabla DynamoDB + SQS queue
+make db-setup
+
+# 3. Insertar datos de prueba
+make db-seed
+
+# 4. Levantar backend
+docker compose up backend -d
+
+# 5. Verificar que el backend está listo
+docker compose logs backend --tail 5
+```
+
+### Health endpoints (sin auth)
+
+```bash
+# Health check
+curl http://localhost:3001/health
+# → {"status":"healthy","service":"mini-onboarding-backend","timestamp":"..."}
+
+# Hello world
+curl http://localhost:3001/hello
+# → {"message":"Hello from Mini Onboarding backend!","timestamp":"..."}
+```
+
+### Merchants endpoints (con mock auth)
+
+**Mock auth**: Cuando `AUTH_MOCK=true`, se usa `seller-dev-001` como sellerId.
+
+```bash
+# Listar merchants del seller mock
+curl http://localhost:3001/merchants
+# → {"success":true,"data":[...2 merchants...]}
+
+# Obtener merchant por ID (importante: # → %23 en URL)
+curl "http://localhost:3001/merchants/MERCHANT%23test-ruc-001"
+# → {"success":true,"data":{"id":"MERCHANT#test-ruc-001",...}}
+
+# Crear nuevo merchant
+curl -X POST http://localhost:3001/merchants \
+  -H "Content-Type: application/json" \
+  -d '{"documentType":"ruc","documentNumber":"20123456786"}'
+# → 201 {"success":true,"data":{"id":"MERCHANT#uuid",...}}
+
+# Actualizar merchant
+curl -X PUT "http://localhost:3001/merchants/MERCHANT%23test-ruc-001" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"submitted"}'
+# → 200 {"success":true,"data":{...,"status":"submitted",...}}
+```
+
+### Datos de prueba
+
+| ID | Documento | Estado | Seller |
+|----|-----------|--------|--------|
+| `MERCHANT#test-ruc-001` | RUC 20123456786 | pending_enrichment | seller-dev-001 |
+| `MERCHANT#test-dni-002` | DNI 12345678 | ready_to_submit | seller-dev-001 |
+| `MERCHANT#test-ruc-003` | RUC 20987654321 | submitted | seller-dev-002 |
+
+> Nota: Solo ves merchants de `seller-dev-001` porque el mock auth usa ese sellerId.
+
+### Verificar datos en DynamoDB
+
+```bash
+# Scan completo
+make db-shell
+
+# Reset completo (borrar + recrear + seed)
+make db-reset
+```
+
+### Errores comunes
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| `401 Unauthorized` | AUTH_MOCK no está activo | Verificar `.env` y reiniciar backend |
+| `404 Not Found` | Merchant no existe | Ejecutar `make db-seed` |
+| `500 Internal Server Error` | DynamoDB/SQS no disponible | Verificar FLOCI con `make floci-health` |
+| `Connection refused` | Backend no está corriendo | Ejecutar `docker compose up backend -d` |
+
+Para más detalles, ver [Backend API Documentation](backend.md).
 
 ## Development workflow
 
