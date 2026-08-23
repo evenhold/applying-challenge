@@ -130,8 +130,18 @@ echo "  User Pool ID:  $POOL_ID"
 echo "  Client ID:     $CLIENT_ID"
 echo "  Test User:     $TEST_EMAIL"
 echo "  Test Password: $TEST_PASSWORD"
+
 echo ""
-echo "Variables de entorno para .env:"
-echo "  COGNITO_USER_POOL_ID=$POOL_ID"
-echo "  COGNITO_CLIENT_ID=$CLIENT_ID"
-echo "  COGNITO_REGION=$REGION"
+echo "📝 Actualizando .env con los IDs de Cognito..."
+
+ENV_FILE=".env"
+if [ -f "$ENV_FILE" ]; then
+  sed -i "s/^COGNITO_USER_POOL_ID=.*/COGNITO_USER_POOL_ID=$POOL_ID/" "$ENV_FILE"
+  sed -i "s/^COGNITO_CLIENT_ID=.*/COGNITO_CLIENT_ID=$CLIENT_ID/" "$ENV_FILE"
+  sed -i "s/^NEXT_PUBLIC_COGNITO_USER_POOL_ID=.*/NEXT_PUBLIC_COGNITO_USER_POOL_ID=$POOL_ID/" "$ENV_FILE"
+  echo "✅ .env actualizado."
+else
+  echo "⚠️  Archivo .env no encontrado. Agrega manualmente:"
+  echo "  COGNITO_USER_POOL_ID=$POOL_ID"
+  echo "  COGNITO_CLIENT_ID=$CLIENT_ID"
+fi

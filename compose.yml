@@ -8,10 +8,10 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXT_PUBLIC_COGNITO_USER_POOL_ID=${NEXT_PUBLIC_COGNITO_USER_POOL_ID}
-      - NEXT_PUBLIC_COGNITO_CLIENT_ID=${NEXT_PUBLIC_COGNITO_CLIENT_ID}
       - NEXT_PUBLIC_COGNITO_REGION=${NEXT_PUBLIC_COGNITO_REGION}
       - NEXT_PUBLIC_COGNITO_ENDPOINT=${NEXT_PUBLIC_COGNITO_ENDPOINT}
       - COGNITO_ENDPOINT=${COGNITO_ENDPOINT}
+      - BACKEND_URL=${BACKEND_URL}
     depends_on:
       floci:
         condition: service_healthy
@@ -60,6 +60,8 @@ services:
       - floci-data:/app/data
     environment:
       - FLOCI_DEFAULT_REGION=${AWS_REGION}
+      - FLOCI_STORAGE_MODE=hybrid
+      - FLOCI_STORAGE_PERSISTENT_PATH=/app/data
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:4566/_localstack/health"]
       interval: 5s

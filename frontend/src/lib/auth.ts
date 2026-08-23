@@ -1,9 +1,3 @@
-const COGNITO_CONFIG = {
-  userPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || '',
-  clientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '',
-  region: process.env.NEXT_PUBLIC_COGNITO_REGION || 'us-east-1',
-};
-
 export interface AuthTokens {
   accessToken: string;
   idToken: string;
@@ -20,17 +14,8 @@ export interface AuthUser {
 export async function login(email: string, password: string): Promise<AuthTokens> {
   const response = await fetch('/api/auth', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      AuthFlow: 'USER_PASSWORD_AUTH',
-      ClientId: COGNITO_CONFIG.clientId,
-      AuthParameters: {
-        USERNAME: email,
-        PASSWORD: password,
-      },
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
   });
 
   if (!response.ok) {
@@ -50,16 +35,8 @@ export async function login(email: string, password: string): Promise<AuthTokens
 export async function refreshToken(refreshToken: string): Promise<AuthTokens> {
   const response = await fetch('/api/auth', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      AuthFlow: 'REFRESH_TOKEN_AUTH',
-      ClientId: COGNITO_CONFIG.clientId,
-      AuthParameters: {
-        REFRESH_TOKEN: refreshToken,
-      },
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
   });
 
   if (!response.ok) {

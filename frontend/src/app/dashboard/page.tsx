@@ -23,7 +23,7 @@ function DashboardContent() {
   useEffect(() => {
     const fetchMerchants = async () => {
       try {
-        const response = await fetch('http://localhost:3001/merchants', {
+        const response = await fetch('/api/merchants', {
           headers: {
             Authorization: `Bearer ${tokens?.accessToken}`,
           },

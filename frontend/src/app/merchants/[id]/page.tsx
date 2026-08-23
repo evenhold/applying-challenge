@@ -33,7 +33,7 @@ function MerchantDetailContent() {
   useEffect(() => {
     const fetchMerchant = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/merchants/${merchantId}`, {
+        const response = await fetch(`/api/merchants/${merchantId}`, {
           headers: {
             Authorization: `Bearer ${tokens?.accessToken}`,
           },
@@ -64,7 +64,7 @@ function MerchantDetailContent() {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:3001/merchants/${merchantId}`, {
+      const response = await fetch(`/api/merchants/${merchantId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
