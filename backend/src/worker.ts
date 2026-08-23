@@ -8,11 +8,20 @@ const WAIT_TIME_SECONDS = 5;
 
 const client = new SQSClient({
   region: process.env.AWS_REGION || 'us-east-1',
-  endpoint: process.env.AWS_ENDPOINT_URL || undefined,
+  endpoint: process.env.AWS_ENDPOINT_URL || 'http://floci:4566',
 });
 
 const QUEUE_URL =
   process.env.SQS_QUEUE_URL || 'http://floci:4566/000000000000/merchants-enrichment';
+
+async function deleteMessage(receiptHandle: string): Promise<void> {
+  await client.send(
+    new DeleteMessageCommand({
+      QueueUrl: QUEUE_URL,
+      ReceiptHandle: receiptHandle,
+    }),
+  );
+}
 
 async function pollOnce(): Promise<number> {
   const result = await client.send(
@@ -30,21 +39,26 @@ async function pollOnce(): Promise<number> {
   let processed = 0;
 
   for (const message of messages) {
+    const receiptHandle = message.ReceiptHandle!;
     try {
-      const body: EnrichmentMessage = JSON.parse(message.body || '{}');
+      const rawBody = message.Body || '{}';
+      const body: EnrichmentMessage = JSON.parse(rawBody);
+
+      if (!body.merchantId) {
+        console.warn(`[enricher] Skipping message ${message.MessageId}: missing merchantId (body: ${rawBody})`);
+        await deleteMessage(receiptHandle);
+        continue;
+      }
+
       console.log(`[enricher] Processing merchant: ${body.merchantId}`);
       await enrichMerchantUseCase(body);
       console.log(`[enricher] Completed merchant: ${body.merchantId}`);
 
-      await client.send(
-        new DeleteMessageCommand({
-          QueueUrl: QUEUE_URL,
-          ReceiptHandle: message.ReceiptHandle!,
-        }),
-      );
+      await deleteMessage(receiptHandle);
       processed++;
     } catch (error) {
       console.error(`[enricher] Failed to process message ${message.MessageId}:`, error);
+      await deleteMessage(receiptHandle);
     }
   }
 

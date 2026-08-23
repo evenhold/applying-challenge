@@ -79,8 +79,10 @@ services:
       - floci-data:/app/data
     environment:
       - FLOCI_DEFAULT_REGION=${AWS_REGION}
+      - FLOCI_HOSTNAME=floci
       - FLOCI_STORAGE_MODE=persistent
       - FLOCI_STORAGE_PERSISTENT_PATH=/app/data
+      - FLOCI_STORAGE_SERVICES_SQS_MODE=memory
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:4566/_localstack/health"]
       interval: 5s

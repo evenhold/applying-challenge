@@ -83,11 +83,26 @@ if [ "$QUEUE_URL" != "NOT_FOUND" ]; then
   echo "✅ Cola SQS $QUEUE ya existe."
 else
   echo "📝 Creando cola SQS $QUEUE..."
-  $AWS sqs create-queue \
+  QUEUE_URL=$($AWS sqs create-queue \
     --queue-name "$QUEUE" \
     --endpoint-url "$ENDPOINT" \
-    --region "$REGION" > /dev/null
+    --region "$REGION" \
+    --query 'QueueUrl' \
+    --output text)
   echo "✅ Cola SQS $QUEUE creada."
+fi
+
+# Convertir localhost a floci para que funcione dentro de Docker network
+DOCKER_QUEUE_URL=$(echo "$QUEUE_URL" | sed 's|http://localhost:|http://floci:|g')
+
+echo ""
+echo "📝 Actualizando .env con SQS_QUEUE_URL..."
+ENV_FILE=".env"
+if [ -f "$ENV_FILE" ]; then
+  sed -i "s|^SQS_QUEUE_URL=.*|SQS_QUEUE_URL=$DOCKER_QUEUE_URL|" "$ENV_FILE"
+  echo "✅ .env actualizado: $DOCKER_QUEUE_URL"
+else
+  echo "⚠️  Archivo .env no encontrado."
 fi
 
 echo ""
