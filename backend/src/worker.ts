@@ -1,7 +1,9 @@
 import { ReceiveMessageCommand, DeleteMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { enrichMerchantUseCase } from './usecases/merchants/enrich.js';
 import type { EnrichmentMessage } from './lib/sqs.js';
+import { createChildLogger } from './lib/logger.js';
 
+const log = createChildLogger('enricher');
 const POLL_INTERVAL_MS = 2000;
 const MAX_MESSAGES = 10;
 const WAIT_TIME_SECONDS = 5;
@@ -46,19 +48,21 @@ async function pollOnce(): Promise<number> {
       const body: EnrichmentMessage = JSON.parse(rawBody);
 
       if (!body.merchantId) {
-        console.warn(`[enricher] Skipping message ${message.MessageId}: missing merchantId (body: ${rawBody})`);
+        log.warn({ messageId: message.MessageId, body: rawBody }, 'Skipping message: missing merchantId');
         await deleteMessage(receiptHandle);
         continue;
       }
 
-      console.log(`[enricher] Processing merchant: ${body.merchantId}`);
+      log.info({ merchantId: body.merchantId, messageId: message.MessageId }, 'Processing merchant');
+      const start = Date.now();
       await enrichMerchantUseCase(body);
-      console.log(`[enricher] Completed merchant: ${body.merchantId}`);
+      const duration = Date.now() - start;
+      log.info({ merchantId: body.merchantId, duration }, 'Merchant enriched');
 
       await deleteMessage(receiptHandle);
       processed++;
     } catch (error) {
-      console.error(`[enricher] Failed to process message ${message.MessageId}:`, error);
+      log.error({ messageId: message.MessageId, error }, 'Failed to process message');
       await deleteMessage(receiptHandle);
     }
   }
@@ -66,9 +70,7 @@ async function pollOnce(): Promise<number> {
   return processed;
 }
 
-console.log('[enricher] SQS Worker started');
-console.log(`[enricher] Queue: ${QUEUE_URL}`);
-console.log(`[enricher] Polling every ${POLL_INTERVAL_MS}ms`);
+log.info({ queue: QUEUE_URL, pollInterval: POLL_INTERVAL_MS }, 'SQS Worker started');
 
 async function loop() {
   let queueNotFoundLogged = false;
@@ -76,19 +78,19 @@ async function loop() {
     try {
       const count = await pollOnce();
       if (count > 0) {
-        console.log(`[enricher] Processed ${count} message(s)`);
+        log.info({ count }, 'Batch processed');
       }
       queueNotFoundLogged = false;
     } catch (error: any) {
       if (error?.name === 'QueueDoesNotExist' || error?.Code === 'AWS.SimpleQueueService.NonExistentQueue') {
         if (!queueNotFoundLogged) {
-          console.warn('[enricher] SQS queue not found. Waiting for queue to be created...');
+          log.warn('SQS queue not found. Waiting for queue to be created...');
           queueNotFoundLogged = true;
         }
         await new Promise((r) => setTimeout(r, QUEUE_NOT_FOUND_INTERVAL_MS));
         continue;
       }
-      console.error('[enricher] Poll error:', error);
+      log.error({ error }, 'Poll error');
     }
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
   }

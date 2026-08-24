@@ -3,6 +3,9 @@ import { buildEnrichmentCompleteEmail, sendEmail } from '../../lib/ses.js';
 import type { EnrichmentMessage } from '../../lib/sqs.js';
 import { querySunat } from '../../lib/sunat.js';
 import type { Merchant } from '../../types/index.js';
+import { createChildLogger } from '../../lib/logger.js';
+
+const log = createChildLogger('enrich');
 
 export interface EnrichResult {
   merchant: Merchant;
@@ -44,7 +47,7 @@ export async function enrichMerchantUseCase(message: EnrichmentMessage): Promise
     await sendEmail(email);
     emailSent = true;
   } catch {
-    console.error(`Failed to send email for merchant ${merchantId}`);
+    log.error({ merchantId }, 'Failed to send email');
   }
 
   return { merchant: enriched, emailSent };

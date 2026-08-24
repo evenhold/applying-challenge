@@ -2,7 +2,9 @@ import { createServer, type IncomingMessage } from 'node:http';
 import { importSPKI, jwtVerify } from 'jose';
 import { findHandler, getRegisteredRoutes } from './router.js';
 import type { LambdaEvent, LambdaResponse } from './types/index.js';
+import { logger, createChildLogger } from './lib/logger.js';
 
+const log = createChildLogger('server');
 const PORT = Number(process.env.PORT || 3001);
 
 const CORS_HEADERS = {
@@ -91,10 +93,12 @@ function sendResponse(res: NodeJS.WritableStream, response: LambdaResponse): voi
 }
 
 const server = createServer(async (req, res) => {
+  const start = Date.now();
   const path = parsePath(req.url ?? '/');
   const match = findHandler(req.method ?? 'GET', path);
 
   if (!match) {
+    log.warn({ method: req.method, path }, 'Route not found');
     sendResponse(res, notFoundResponse());
     return;
   }
@@ -114,12 +118,21 @@ const server = createServer(async (req, res) => {
   const event = toLambdaEvent(req, body, match.params, claims);
   const response = await match.handler(event);
 
+  const duration = Date.now() - start;
+  log.info({
+    method: req.method,
+    path,
+    status: response.statusCode,
+    duration,
+    sellerId: claims?.sub,
+  }, 'Request handled');
+
   sendResponse(res, response);
 });
 
 server.listen(PORT, () => {
-  console.log(`Backend dev server running on http://localhost:${PORT}`);
+  log.info({ port: PORT }, 'Backend dev server started');
   for (const route of getRegisteredRoutes()) {
-    console.log(`  ${route.method.padEnd(7)} ${route.pattern}`);
+    log.debug({ method: route.method, pattern: route.pattern }, 'Route registered');
   }
 });
