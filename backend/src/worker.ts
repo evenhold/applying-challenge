@@ -1,4 +1,4 @@
-import { ReceiveMessageCommand, DeleteMessageCommand, SQSClient, QueueDoesNotExistException } from '@aws-sdk/client-sqs';
+import { ReceiveMessageCommand, DeleteMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { enrichMerchantUseCase } from './usecases/merchants/enrich.js';
 import type { EnrichmentMessage } from './lib/sqs.js';
 
@@ -79,8 +79,8 @@ async function loop() {
         console.log(`[enricher] Processed ${count} message(s)`);
       }
       queueNotFoundLogged = false;
-    } catch (error) {
-      if (error instanceof QueueDoesNotExistException) {
+    } catch (error: any) {
+      if (error?.name === 'QueueDoesNotExist' || error?.Code === 'AWS.SimpleQueueService.NonExistentQueue') {
         if (!queueNotFoundLogged) {
           console.warn('[enricher] SQS queue not found. Waiting for queue to be created...');
           queueNotFoundLogged = true;
