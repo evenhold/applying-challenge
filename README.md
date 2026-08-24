@@ -44,8 +44,10 @@ make clean             # Limpiar todo
 
 | Documento | Descripción |
 |---|---|
-| [Getting Started](docs/getting-started.md) | Guía completa de inicio y desarrollo |
+| [Local Deployment](docs/local-deployment.md) | Guía completa de despliegue local (paso a paso) |
+| [Getting Started](docs/getting-started.md) | Inicio rápido y desarrollo |
 | [Architecture](docs/architecture.md) | Diagrama de arquitectura |
+| [Production Checklist](docs/production-checklist.md) | Checklist para deploy a AWS |
 | [ADRs](docs/ADR/) | Architecture Decision Records |
 | [AI Usage](docs/ai-usage.md) | Nota de uso de IA |
 | [Challenge](CHALLENGE.md) | Requisitos del evaluation |
