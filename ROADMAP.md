@@ -131,9 +131,13 @@
 
 > **Nota**: Ver `docs/production-checklist.md` para los cambios necesarios DEV→PROD.
 
-## Fase 11: Deploy Final ⏳
+## Fase 11: Deploy Final 🔄
 
-- [ ] Deploy a AWS real
+- [x] Scripts de build Lambda (esbuild → merchants.zip, enricher.zip)
+- [x] Makefile targets (build-lambda, build-frontend, deploy-frontend, deploy-lambda)
+- [ ] Terraform install (requerido en host)
+- [ ] Deploy infraestructura (terraform apply)
+- [ ] Deploy frontend (S3 sync + CloudFront invalidation)
 - [ ] Verificar endpoints
 - [ ] Verificar auth
 - [ ] Verificar async flow
@@ -148,4 +152,4 @@
 
 ---
 
-**Estado actual**: Fase 0-10 completadas (105 tests + Terraform modules). Flujo end-to-end funcionando. Siguiente: Fase 11 (Deploy AWS).
+**Estado actual**: Fase 0-10 completadas + scripts de build Lambda. Siguiente: Terraform install + Deploy AWS.
