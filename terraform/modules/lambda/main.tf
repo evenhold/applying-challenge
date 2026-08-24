@@ -91,3 +91,15 @@ resource "aws_lambda_permission" "sqs_enricher" {
   function_name = aws_lambda_function.enricher.function_name
   principal     = "sqs.amazonaws.com"
 }
+
+# ---------------------------------------------------------------------------
+# Event Source Mapping — SQS -> Enricher Lambda
+# ---------------------------------------------------------------------------
+resource "aws_lambda_event_source_mapping" "enricher" {
+  event_source_arn = var.sqs_queue_arn
+  function_name    = aws_lambda_function.enricher.arn
+  batch_size       = 10
+  enabled          = true
+
+  function_response_types = ["ReportBatchItemFailures"]
+}

@@ -92,20 +92,19 @@ build-frontend: ## Build frontend static export for S3+CloudFront
 	cd frontend && pnpm build
 
 infra-init: ## terraform init
-	docker compose run --rm infra terraform init
+	docker compose run --rm infra init
 
 infra-plan: ## terraform plan
-	docker compose run --rm infra terraform plan
+	docker compose run --rm infra plan
 
 infra-apply: ## terraform apply (auto-approve para dev)
-	docker compose run --rm infra terraform apply -auto-approve
+	docker compose run --rm infra apply -auto-approve
 
 infra-destroy: ## terraform destroy
-	docker compose run --rm infra terraform destroy
+	docker compose run --rm infra destroy
 
-infra-validate: ## terraform validate + plan
-	docker compose run --rm infra terraform validate
-	docker compose run --rm infra terraform plan
+infra-validate: ## terraform validate
+	docker compose run --rm infra validate
 
 # ==============================================================================
 # Deploy
