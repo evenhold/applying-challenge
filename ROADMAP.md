@@ -135,7 +135,8 @@
 
 - [x] Scripts de build Lambda (esbuild → merchants.zip, enricher.zip)
 - [x] Makefile targets (build-lambda, build-frontend, deploy-frontend, deploy-lambda)
-- [ ] Terraform install (requerido en host)
+- [x] Servicio infra en compose.yml (Terraform + AWS CLI via Docker)
+- [x] Event Source Mapping (SQS → enricher Lambda)
 - [ ] Deploy infraestructura (terraform apply)
 - [ ] Deploy frontend (S3 sync + CloudFront invalidation)
 - [ ] Verificar endpoints
@@ -152,4 +153,4 @@
 
 ---
 
-**Estado actual**: Fase 0-10 completadas + scripts de build Lambda. Siguiente: Terraform install + Deploy AWS.
+**Estado actual**: Fase 0-10 completadas + infra via Docker Compose + Event Source Mapping. Listo para `make infra-apply`.
