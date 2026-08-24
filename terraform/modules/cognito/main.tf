@@ -81,12 +81,6 @@ resource "aws_cognito_user_pool_client" "merchants_sellers_app" {
   refresh_token_validity = 30
 
   prevent_user_existence_errors = "ENABLED"
-
-  tags = {
-    Project     = var.project
-    Environment = var.environment
-    ManagedBy   = "terraform"
-  }
 }
 
 resource "aws_cognito_user_pool_domain" "merchants_sellers" {

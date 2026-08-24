@@ -17,17 +17,13 @@ resource "aws_apigatewayv2_api" "main" {
 
 resource "aws_apigatewayv2_authorizer" "cognito" {
   api_id           = aws_apigatewayv2_api.main.id
-  authorizer_type  = "COGNITO_USER_POOLS"
+  authorizer_type  = "JWT"
   identity_sources = ["$request.header.Authorization"]
   name             = "${var.project}-${var.environment}-cognito-authorizer"
 
   jwt_configuration {
     audience = [var.cognito_client_id]
-  }
-
-  tags = {
-    Project     = var.project
-    Environment = var.environment
+    issuer   = "https://cognito-idp.${data.aws_region.current.name}.amazonaws.com/${var.cognito_user_pool_id}"
   }
 }
 
@@ -58,7 +54,6 @@ resource "aws_apigatewayv2_stage" "default" {
       protocol       = "$context.protocol"
       responseLength = "$context.responseLength"
       integrationLatency = "$context.integrationLatency"
-      authorizerLatency  = "$context.authorizerLatency"
     })
   }
 
@@ -118,3 +113,5 @@ resource "aws_apigatewayv2_route" "health" {
 
   authorization_type = "NONE"
 }
+
+data "aws_region" "current" {}

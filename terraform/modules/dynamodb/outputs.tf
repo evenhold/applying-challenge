@@ -10,10 +10,10 @@ output "table_arn" {
 
 output "gsi1_name" {
   description = "Name of the first Global Secondary Index"
-  value       = aws_dynamodb_table.merchants.global_secondary_index[0].name
+  value       = tolist(aws_dynamodb_table.merchants.global_secondary_index)[0].name
 }
 
 output "gsi2_name" {
   description = "Name of the second Global Secondary Index"
-  value       = aws_dynamodb_table.merchants.global_secondary_index[1].name
+  value       = tolist(aws_dynamodb_table.merchants.global_secondary_index)[1].name
 }

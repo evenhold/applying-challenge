@@ -11,6 +11,31 @@ module "merchants" {
 
   cors_allow_origins = ["http://localhost:3000"]
 
-  merchants_zip_path = "build/merchants.zip"
-  enricher_zip_path  = "build/enricher.zip"
+  merchants_zip_path = "/build/merchants.zip"
+  enricher_zip_path  = "/build/enricher.zip"
+}
+
+output "api_url" {
+  value = module.merchants.api_url
+}
+
+output "cognito_user_pool_id" {
+  value = module.merchants.cognito_user_pool_id
+}
+
+output "cognito_client_id" {
+  value     = module.merchants.cognito_client_id
+  sensitive = true
+}
+
+output "dynamodb_table_name" {
+  value = module.merchants.dynamodb_table_name
+}
+
+output "sqs_queue_url" {
+  value = module.merchants.sqs_queue_url
+}
+
+output "cloudfront_domain" {
+  value = module.merchants.cloudfront_domain
 }

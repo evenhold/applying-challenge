@@ -33,6 +33,11 @@ variable "sqs_queue_url" {
   type        = string
 }
 
+variable "sqs_queue_arn" {
+  description = "ARN of the SQS queue for the Event Source Mapping"
+  type        = string
+}
+
 variable "ses_sender_email" {
   description = "Verified SES email address used as sender for the enricher Lambda"
   type        = string

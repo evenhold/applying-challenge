@@ -118,6 +118,18 @@ data "aws_iam_policy_document" "lambda_enricher_permissions" {
     ]
   }
 
+  # SQS — receive and delete messages from enrichment queue
+  statement {
+    sid    = "SQSReceiveEnrichment"
+    effect = "Allow"
+    actions = [
+      "sqs:ReceiveMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
+    ]
+    resources = [var.sqs_queue_arn]
+  }
+
   # SES — send emails
   statement {
     sid    = "SESSendEmail"

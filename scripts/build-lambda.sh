@@ -9,66 +9,55 @@ set -euo pipefail
 #   - build/enricher.zip (enrichment processor)
 #
 # Usage:
-#   bash scripts/build-lambda.sh
-#
-# Requirements:
-#   - Node.js >= 20
-#   - pnpm
+#   make build-lambda
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKEND_DIR="$(cd "$SCRIPT_DIR/../backend" && pwd)"
-BUILD_DIR="$SCRIPT_DIR/../build"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+BUILD_DIR="$PROJECT_DIR/build"
 
 echo "🔧 Building Lambda functions..."
 
-# Clean previous builds
 rm -rf "$BUILD_DIR"
-mkdir -p "$BUILD_DIR/merchants" "$BUILD_DIR/enricher"
+mkdir -p "$BUILD_DIR"
 
-# Install dependencies (production only)
-cd "$BACKEND_DIR"
-echo "📦 Installing production dependencies..."
-pnpm install --frozen-lockfile 2>/dev/null || pnpm install
+echo "📦 Building inside Docker..."
 
-# Bundle merchants handler
-echo "📦 Bundling merchants handler..."
-pnpm exec esbuild src/handlers/merchants.ts \
-  --bundle \
-  --platform=node \
-  --target=node20 \
-  --format=esm \
-  --outfile="$BUILD_DIR/merchants/index.js" \
-  --external:@aws-sdk/* \
-  --minify
+docker compose run --rm \
+  -v "$BUILD_DIR:/build" \
+  -w /app \
+  backend sh -c '
+  apt-get update -qq && apt-get install -y -qq zip > /dev/null 2>&1
 
-# Bundle enricher handler
-echo "📦 Bundling enricher handler..."
-pnpm exec esbuild src/handlers/enricher.ts \
-  --bundle \
-  --platform=node \
-  --target=node20 \
-  --format=esm \
-  --outfile="$BUILD_DIR/enricher/index.js" \
-  --external:@aws-sdk/* \
-  --minify
+  echo "📦 Bundling merchants handler..."
+  mkdir -p /build/merchants
+  pnpm exec esbuild src/handlers/merchants.ts \
+    --bundle --platform=node --target=node20 --format=esm \
+    --outfile=/build/merchants/index.js \
+    --external:@aws-sdk/* --minify
 
-# Create ZIP files
-cd "$BUILD_DIR"
-echo "📦 Creating merchants.zip..."
-cd merchants && zip -q ../merchants.zip index.js && cd ..
+  echo "📦 Bundling enricher handler..."
+  mkdir -p /build/enricher
+  pnpm exec esbuild src/handlers/enricher.ts \
+    --bundle --platform=node --target=node20 --format=esm \
+    --outfile=/build/enricher/index.js \
+    --external:@aws-sdk/* --minify
 
-echo "📦 Creating enricher.zip..."
-cd enricher && zip -q ../enricher.zip index.js && cd ..
+  echo "📦 Creating ZIP files..."
+  cd /build/merchants && zip -q /build/merchants.zip index.js
+  cd /build/enricher && zip -q /build/enricher.zip index.js
 
-# Report results
+  echo "✅ Build complete!"
+  ls -lh /build/*.zip
+'
+
 echo ""
 echo "✅ Lambda build complete!"
 echo ""
 echo "Output files:"
-ls -lh "$BUILD_DIR"/*.zip 2>/dev/null
+ls -lh "$BUILD_DIR"/*.zip
 echo ""
-echo "To deploy:"
-echo "  1. cd terraform/environments/dev"
-echo "  2. terraform init"
-echo "  3. terraform apply"
+echo "Next steps:"
+echo "  make infra-init"
+echo "  make infra-plan"
+echo "  make infra-apply"

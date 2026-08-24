@@ -18,6 +18,11 @@ variable "cognito_client_id" {
   type        = string
 }
 
+variable "cognito_user_pool_id" {
+  description = "ID of the Cognito User Pool, used in JWT issuer URL"
+  type        = string
+}
+
 variable "merchants_function_invoke_arn" {
   description = "Invoke ARN of the merchants Lambda function"
   type        = string

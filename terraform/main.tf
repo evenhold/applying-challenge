@@ -79,6 +79,7 @@ module "lambda" {
   enricher_role_arn   = module.iam.enricher_role_arn
   dynamodb_table_name = module.dynamodb.table_name
   sqs_queue_url       = module.sqs.queue_url
+  sqs_queue_arn       = module.sqs.queue_arn
   ses_sender_email    = var.ses_sender_email
   merchants_zip_path  = var.merchants_zip_path
   enricher_zip_path   = var.enricher_zip_path
@@ -92,6 +93,7 @@ module "api_gateway" {
   project                    = var.project
   environment                = var.environment
   cognito_user_pool_arn      = module.cognito.user_pool_arn
+  cognito_user_pool_id       = module.cognito.user_pool_id
   cognito_client_id          = module.cognito.client_id
   merchants_function_invoke_arn = module.lambda.merchants_function_arn
   cors_allow_origins         = var.cors_allow_origins
@@ -104,17 +106,20 @@ module "s3_cloudfront" {
 
   project     = var.project
   environment = var.environment
+  bucket_name = "frontend"
 }
 
-# ---------- WAF ----------
+# ---------- WAF (disabled — REGIONAL WAF incompatible with CloudFront) ----------
+# To enable: create separate CLOUDFRONT scope WAF in us-east-1 for CloudFront
+# and keep REGIONAL scope WAF for API Gateway
 
-module "waf" {
-  source = "./modules/waf"
-
-  project                = var.project
-  environment            = var.environment
-  api_gateway_stage_arn  = module.api_gateway.api_execution_arn
-}
+# module "waf" {
+#   source = "./modules/waf"
+#
+#   project                = var.project
+#   environment            = var.environment
+#   api_gateway_stage_arn  = module.api_gateway.api_execution_arn
+# }
 
 # ---------- Observability ----------
 

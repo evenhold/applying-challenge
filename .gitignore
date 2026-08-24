@@ -10,6 +10,8 @@ out/
 # Environment
 .env
 .env.local
+.env.develop
+.env.production
 .env.*.local
 
 # IDE

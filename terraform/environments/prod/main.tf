@@ -11,6 +11,6 @@ module "merchants" {
 
   cors_allow_origins = ["https://mini-onboarding.com"]
 
-  merchants_zip_path = "build/merchants.zip"
-  enricher_zip_path  = "build/enricher.zip"
+  merchants_zip_path = "/build/merchants.zip"
+  enricher_zip_path  = "/build/enricher.zip"
 }

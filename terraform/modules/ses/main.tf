@@ -6,16 +6,10 @@ resource "aws_ses_configuration_set" "tracking" {
   name = "${var.project}-${var.environment}-tracking"
 
   delivery_options {
-    tls_policy = "REQUIRE"
+    tls_policy = "Require"
   }
 
   reputation_metrics_enabled = true
-
-  tags = {
-    Name        = "${var.project}-${var.environment}-ses-config"
-    Environment = var.environment
-    Project     = var.project
-  }
 }
 
 resource "aws_ses_event_destination" "cloudwatch" {
