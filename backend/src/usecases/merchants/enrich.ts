@@ -44,8 +44,10 @@ export async function enrichMerchantUseCase(message: EnrichmentMessage): Promise
       sunatData.businessName,
       documentNumber,
     );
+    log.info({ merchantId, to: email.to, subject: email.subject }, '📧 Sending email');
     await sendEmail(email);
     emailSent = true;
+    log.info({ merchantId, to: email.to }, '📧 Email sent successfully');
   } catch {
     log.error({ merchantId }, 'Failed to send email');
   }
