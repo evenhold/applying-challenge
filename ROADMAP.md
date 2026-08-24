@@ -137,6 +137,12 @@
 - [x] Makefile targets (build-lambda, build-frontend, deploy-frontend, deploy-lambda)
 - [x] Servicio infra en compose.yml (Terraform + AWS CLI via Docker)
 - [x] Event Source Mapping (SQS → enricher Lambda)
+- [x] Observabilidad local (Pino JSON logs)
+- [x] Observabilidad AWS (CloudWatch + Alarms + Dashboard + X-Ray)
+- [x] Cost optimization (Lambda 128/256MB, no reserved concurrency, PITR off dev, 7d logs, WAF OWASP)
+- [x] Email logging visible en worker
+- [x] Test separation (unit vs integration)
+- [ ] Credenciales AWS
 - [ ] Deploy infraestructura (terraform apply)
 - [ ] Deploy frontend (S3 sync + CloudFront invalidation)
 - [ ] Verificar endpoints
@@ -153,4 +159,4 @@
 
 ---
 
-**Estado actual**: Fase 0-10 completadas + infra via Docker Compose + Event Source Mapping. Listo para `make infra-apply`.
+**Estado actual**: Fase 0-10 completadas + infra via Docker Compose + cost optimization. Listo para deploy AWS (esperando credenciales). Costo estimado: ~$10.86/mes.

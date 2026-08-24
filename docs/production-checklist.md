@@ -297,23 +297,73 @@ dynamodb_table = "merchants"
 
 ---
 
-## 9. Costos estimados
+## 9. Costos estimados (optimizados para app básica)
 
 ```
-Producción (bajo tráfico):
-  Lambda:      $2.50/mes  (10K requests)
-  DynamoDB:    $0.04/mes  (on-demand)
-  API Gateway: $0.01/mes  (10K requests)
-  SQS:         $0.0002/mes
-  Cognito:     $0.55/mes  (100 MAU)
-  SES:         $0.05/mes  (500 emails)
-  S3:          $0.02/mes  (frontend estático)
-  CloudFront:  $0.50/mes  (100GB transfer)
-  WAF:         $15.00/mes
-  X-Ray:       $0.50/mes
-  CloudWatch:  $1.00/mes
-  TOTAL:       ~$20/mes
+Producción (bajo tráfico, ~10K requests/mes):
+  Lambda merchants (128MB):   $0.40/mes
+  Lambda enricher (256MB):    $0.40/mes
+  DynamoDB (on-demand):       $0.04/mes
+  API Gateway (HTTP API):     $0.10/mes
+  SQS + DLQ:                  $0.0002/mes
+  Cognito (100 MAU):          $0.55/mes
+  SES:                        $0.05/mes
+  S3 + CloudFront:            $0.52/mes
+  WAF (3 reglas OWASP):       $8.00/mes
+  CloudWatch + X-Ray:         $0.80/mes
+  ─────────────────────────────────────────
+  TOTAL:                      ~$10.86/mes
+  Sin WAF:                    ~$2.86/mes (pero sin protección OWASP)
 ```
+
+### Detalle de costos por servicio
+
+| Servicio | Recurso | Costo/mes | Optimización |
+|----------|---------|-----------|--------------|
+| **Lambda** | merchants (128MB, 10s) | $0.40 | Reducido de 256MB |
+| **Lambda** | enricher (256MB, 60s) | $0.40 | Reducido de 512MB |
+| **DynamoDB** | tabla + 2 GSIs (on-demand) | $0.04 | PITR deshabilitado en dev |
+| **API Gateway** | HTTP API v2 | $0.10 | — |
+| **SQS** | cola + DLQ | $0.0002 | — |
+| **Cognito** | User Pool + Client | $0.55 | — |
+| **SES** | Email transaccional | $0.05 | — |
+| **S3** | Frontend bucket | $0.02 | — |
+| **CloudFront** | CDN distribution | $0.50 | PriceClass_100 |
+| **WAF** | Web ACL + 3 rules | $8.00 | OWASP Top 10 |
+| **X-Ray** | Distributed tracing | $0.50 | — |
+| **CloudWatch** | Logs (7d) + 1 alarm + dashboard | $0.30 | Retención reducida |
+
+### OWASP Top 10 — cobertura WAF
+
+| OWASP # | Vulnerabilidad | WAF Rule | Estado |
+|---------|----------------|----------|--------|
+| A01 | Broken Access Control | Cognito Authorizer | ✅ |
+| A02 | Cryptographic Failures | HTTPS everywhere | ✅ |
+| A03 | Injection | AWSManagedRulesCommonRuleSet | ✅ |
+| A04 | Insecure Design | Arquitectura serverless | ✅ |
+| A05 | Security Misconfiguration | AWSManagedRulesCommonRuleSet | ✅ |
+| A06 | Vulnerable Components | Managed by AWS | ✅ |
+| A07 | XSS | AWSManagedRulesCommonRuleSet | ✅ |
+| A08 | Data Integrity | DynamoDB + S3 encryption | ✅ |
+| A09 | Logging | CloudWatch + X-Ray | ✅ |
+| A10 | SSRF | AWSManagedRulesKnownBadInputsRuleSet | ✅ |
+
+### Recursos que NO generan costo
+
+- IAM Roles + Policies
+- SES Email Identity (verificación)
+- Lambda Permissions
+- Event Source Mapping
+- S3 Bucket Policy + Encryption + Versioning
+
+### Escalabilidad
+
+| Tráfico | Costo/mes estimado |
+|---------|-------------------|
+| 10K requests/mes | ~$10.86 |
+| 100K requests/mes | ~$25 |
+| 1M requests/mes | ~$150 |
+| 10M requests/mes | ~$1,200 |
 
 ---
 
