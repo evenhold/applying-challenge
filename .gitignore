@@ -6,6 +6,7 @@ node_modules/
 dist/
 out/
 .next/
+build/
 
 # Environment
 .env
@@ -30,6 +31,7 @@ npm-debug.log*
 
 # Terraform
 .terraform/
+.terraform.lock.hcl
 *.tfstate
 *.tfstate.backup
 *.tfvars
