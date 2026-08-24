@@ -2,6 +2,7 @@
        test test-unit test-integration test-e2e \
        setup db-setup db-seed db-shell db-reset \
        cognito-setup \
+       build-lambda build-frontend \
        infra-init infra-plan infra-apply infra-destroy infra-validate \
        deploy deploy-infra \
        logs shell-frontend shell-backend floci-health clean
@@ -84,6 +85,12 @@ cognito-setup: ## Crear User Pool + App Client + Test User en FLOCI
 # Infraestructura
 # ==============================================================================
 
+build-lambda: ## Build Lambda ZIP files with esbuild
+	bash scripts/build-lambda.sh
+
+build-frontend: ## Build frontend static export for S3+CloudFront
+	cd frontend && pnpm build
+
 infra-init: ## terraform init
 	docker compose run --rm infra terraform init
 
@@ -104,10 +111,13 @@ infra-validate: ## terraform validate + plan
 # Deploy
 # ==============================================================================
 
-deploy: ## Build + S3 sync + CloudFront invalidation
-	cd frontend && pnpm build
+deploy-frontend: build-frontend ## Build + S3 sync + CloudFront invalidation
 	aws s3 sync frontend/out s3://$(FRONTEND_BUCKET) --delete
 	aws cloudfront create-invalidation --distribution-id $(CF_DISTRIBUTION_ID) --paths "/*"
+
+deploy-lambda: build-lambda ## Build + deploy Lambda ZIPs
+	@echo "📦 Lambda ZIPs ready in build/"
+	@echo "Run 'make infra-apply' to deploy via Terraform"
 
 # ==============================================================================
 # Utilidades
