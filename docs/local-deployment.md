@@ -20,27 +20,27 @@ Guía completa paso a paso para levantar el proyecto en tu máquina usando Docke
 
 ### Software necesario
 
-| Software | Versión mínima | Cómo verificar | Cómo instalar |
-|----------|---------------|----------------|---------------|
-| **Docker** | 24.0+ | `docker --version` | [docker.com](https://docs.docker.com/get-docker/) |
-| **Docker Compose** | v2.20+ | `docker compose version` | Incluido con Docker Desktop |
-| **Git** | 2.30+ | `git --version` | [git-scm.com](https://git-scm.com/) |
+| Software           | Versión mínima | Cómo verificar           | Cómo instalar                                     |
+| ------------------ | -------------- | ------------------------ | ------------------------------------------------- |
+| **Docker**         | 24.0+          | `docker --version`       | [docker.com](https://docs.docker.com/get-docker/) |
+| **Docker Compose** | v2.20+         | `docker compose version` | Incluido con Docker Desktop                       |
+| **Git**            | 2.30+          | `git --version`          | [git-scm.com](https://git-scm.com/)               |
 
 ### Hardware mínimo
 
-| Recurso | Mínimo | Recomendado |
-|---------|--------|-------------|
-| RAM | 4 GB | 8 GB |
-| Disco | 5 GB libres | 10 GB |
-| CPU | 2 cores | 4 cores |
+| Recurso | Mínimo      | Recomendado |
+| ------- | ----------- | ----------- |
+| RAM     | 4 GB        | 8 GB        |
+| Disco   | 5 GB libres | 10 GB       |
+| CPU     | 2 cores     | 4 cores     |
 
 ### Puertos requeridos
 
-| Puerto | Servicio | Notas |
-|--------|----------|-------|
-| 3000 | Frontend (NextJS) | Interfaz de usuario |
-| 3001 | Backend (Node.js) | API server |
-| 4566 | FLOCI (AWS emulator) | DynamoDB, SQS, Cognito, SES |
+| Puerto | Servicio             | Notas                       |
+| ------ | -------------------- | --------------------------- |
+| 3000   | Frontend (NextJS)    | Interfaz de usuario         |
+| 3001   | Backend (Node.js)    | API server                  |
+| 4566   | FLOCI (AWS emulator) | DynamoDB, SQS, Cognito, SES |
 
 > **Importante**: Asegúrate de que estos puertos no estén en uso por otros servicios.
 
@@ -72,15 +72,15 @@ cat .env
 
 Variables principales:
 
-| Variable | Valor | Propósito |
-|----------|-------|-----------|
-| `AWS_ENDPOINT_URL` | `http://floci:4566` | URL de FLOCI dentro de Docker |
-| `AWS_REGION` | `us-east-1` | Región de AWS |
-| `AWS_ACCESS_KEY_ID` | `test` | Credencial fake (FLOCI) |
-| `AWS_SECRET_ACCESS_KEY` | `test` | Credencial fake (FLOCI) |
-| `DYNAMODB_TABLE` | `merchants` | Nombre de la tabla |
-| `AUTH_MOCK` | `true` | Bypass JWT (solo dev) |
-| `SES_SENDER_EMAIL` | `noreply@mini-onboarding.local` | Email de prueba |
+| Variable                | Valor                           | Propósito                     |
+| ----------------------- | ------------------------------- | ----------------------------- |
+| `AWS_ENDPOINT_URL`      | `http://floci:4566`             | URL de FLOCI dentro de Docker |
+| `AWS_REGION`            | `us-east-1`                     | Región de AWS                 |
+| `AWS_ACCESS_KEY_ID`     | `test`                          | Credencial fake (FLOCI)       |
+| `AWS_SECRET_ACCESS_KEY` | `test`                          | Credencial fake (FLOCI)       |
+| `DYNAMODB_TABLE`        | `merchants`                     | Nombre de la tabla            |
+| `AUTH_MOCK`             | `true`                          | Bypass JWT (solo dev)         |
+| `SES_SENDER_EMAIL`      | `noreply@mini-onboarding.local` | Email de prueba               |
 
 ---
 
@@ -95,6 +95,7 @@ make setup
 ```
 
 Salida esperada:
+
 ```
 ✅ Cognito User Pool created: us-east-1_XXXXXXXXX
 ✅ Cognito Client created: XXXXXXXXXXXXXXXXXXXXXXXX
@@ -121,12 +122,12 @@ docker compose up -d
 
 ### 3.3 Servicios que se levantan
 
-| Servicio | Puerto | Descripción |
-|----------|--------|-------------|
-| `floci` | 4566 | Emulador AWS (DynamoDB, SQS, Cognito, SES) |
-| `backend` | 3001 | API server (Node.js + TypeScript) |
-| `frontend` | 3000 | Interfaz de usuario (NextJS) |
-| `worker` | — | Procesador de mensajes SQS (polling cada 2s) |
+| Servicio   | Puerto | Descripción                                  |
+| ---------- | ------ | -------------------------------------------- |
+| `floci`    | 4566   | Emulador AWS (DynamoDB, SQS, Cognito, SES)   |
+| `backend`  | 3001   | API server (Node.js + TypeScript)            |
+| `frontend` | 3000   | Interfaz de usuario (NextJS)                 |
+| `worker`   | —      | Procesador de mensajes SQS (polling cada 2s) |
 
 ### 3.4 Verificar que FLOCI está saludable
 
@@ -135,6 +136,7 @@ make floci-health
 ```
 
 Salida esperada:
+
 ```json
 {
   "services": {
@@ -219,10 +221,10 @@ Abrir en el navegador: **http://localhost:3000**
 1. Ir a **http://localhost:3000/login**
 2. Ingresar credenciales:
 
-| Campo | Valor |
-|-------|-------|
-| Email | `seller@test.com` |
-| Password | `Seller123!` |
+| Campo    | Valor             |
+| -------- | ----------------- |
+| Email    | `seller@test.com` |
+| Password | `Seller123!`      |
 
 3. Click **"Entrar"**
 4. Redirige al **Dashboard**
@@ -328,6 +330,7 @@ make clean              # Limpiar contenedores y volúmenes
 **Síntoma**: `docker compose logs floci` muestra errores
 
 **Solución**:
+
 ```bash
 make clean              # Limpiar todo
 make dev-floci          # Recrear FLOCI
@@ -339,6 +342,7 @@ make floci-health       # Verificar salud
 **Síntoma**: `500 Internal Server Error` al llamar API
 
 **Solución**:
+
 ```bash
 make db-setup           # Crear tabla
 make db-seed            # Insertar datos
@@ -349,6 +353,7 @@ make db-seed            # Insertar datos
 **Síntoma**: `Error starting userland proxy: Bind for 0.0.0.0:3000: address already in use`
 
 **Solución**:
+
 ```bash
 # Matar proceso que usa el puerto
 lsof -ti:3000 | xargs kill -9
@@ -361,6 +366,7 @@ lsof -ti:4566 | xargs kill -9
 **Síntoma**: `Client not found` al hacer login
 
 **Solución**:
+
 ```bash
 make cognito-setup      # Recrear Cognito (auto-actualiza .env)
 docker compose restart  # Reiniciar backend con nuevo Client ID
@@ -371,6 +377,7 @@ docker compose restart  # Reiniciar backend con nuevo Client ID
 **Síntoma**: `TableNames: []` después de `docker compose restart`
 
 **Solución**:
+
 ```bash
 make setup              # Recrear todo (idempotente)
 ```
@@ -380,6 +387,7 @@ make setup              # Recrear todo (idempotente)
 **Síntoma**: Merchant se queda en `pending_enrichment`
 
 **Solución**:
+
 ```bash
 # Ver logs del worker
 docker compose logs worker --tail 50

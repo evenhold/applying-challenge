@@ -1,10 +1,11 @@
-import { ReceiveMessageCommand, DeleteMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import { ReceiveMessageCommand, DeleteMessageCommand, SQSClient, QueueDoesNotExistException } from '@aws-sdk/client-sqs';
 import { enrichMerchantUseCase } from './usecases/merchants/enrich.js';
 import type { EnrichmentMessage } from './lib/sqs.js';
 
 const POLL_INTERVAL_MS = 2000;
 const MAX_MESSAGES = 10;
 const WAIT_TIME_SECONDS = 5;
+const QUEUE_NOT_FOUND_INTERVAL_MS = 10000;
 
 const client = new SQSClient({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -70,13 +71,23 @@ console.log(`[enricher] Queue: ${QUEUE_URL}`);
 console.log(`[enricher] Polling every ${POLL_INTERVAL_MS}ms`);
 
 async function loop() {
+  let queueNotFoundLogged = false;
   while (true) {
     try {
       const count = await pollOnce();
       if (count > 0) {
         console.log(`[enricher] Processed ${count} message(s)`);
       }
+      queueNotFoundLogged = false;
     } catch (error) {
+      if (error instanceof QueueDoesNotExistException) {
+        if (!queueNotFoundLogged) {
+          console.warn('[enricher] SQS queue not found. Waiting for queue to be created...');
+          queueNotFoundLogged = true;
+        }
+        await new Promise((r) => setTimeout(r, QUEUE_NOT_FOUND_INTERVAL_MS));
+        continue;
+      }
       console.error('[enricher] Poll error:', error);
     }
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
