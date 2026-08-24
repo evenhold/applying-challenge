@@ -34,6 +34,7 @@ module "dynamodb" {
   project                   = var.project
   environment               = var.environment
   enable_deletion_protection = var.environment == "prod" ? true : false
+  enable_pitr               = var.environment == "prod" ? true : false
 }
 
 # ---------- SQS ----------
@@ -124,6 +125,4 @@ module "observability" {
   environment              = var.environment
   merchants_function_name  = module.lambda.merchants_function_name
   enricher_function_name   = module.lambda.enricher_function_name
-  api_id                   = module.api_gateway.api_id
-  sqs_queue_name           = "${var.project}-${var.environment}-enrichment"
 }

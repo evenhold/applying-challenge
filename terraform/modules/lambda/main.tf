@@ -20,9 +20,8 @@ resource "aws_lambda_function" "merchants" {
   runtime = var.node_runtime
   role    = var.merchants_role_arn
 
-  memory_size                  = 256
-  timeout                      = 10
-  reserved_concurrent_executions = 10
+  memory_size = 128
+  timeout     = 10
 
   tracing_config {
     mode = "Active"
@@ -55,9 +54,8 @@ resource "aws_lambda_function" "enricher" {
   runtime = var.node_runtime
   role    = var.enricher_role_arn
 
-  memory_size                  = 512
-  timeout                      = 60
-  reserved_concurrent_executions = null
+  memory_size = 256
+  timeout     = 60
 
   tracing_config {
     mode = "Active"

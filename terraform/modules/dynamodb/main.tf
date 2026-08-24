@@ -49,7 +49,7 @@ resource "aws_dynamodb_table" "merchants" {
   }
 
   point_in_time_recovery {
-    enabled = true
+    enabled = var.enable_pitr
   }
 
   server_side_encryption {

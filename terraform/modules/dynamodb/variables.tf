@@ -18,3 +18,9 @@ variable "enable_deletion_protection" {
   type        = bool
   default     = true
 }
+
+variable "enable_pitr" {
+  description = "Enable point-in-time recovery on the DynamoDB table"
+  type        = bool
+  default     = false
+}
