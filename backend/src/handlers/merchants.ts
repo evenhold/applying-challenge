@@ -107,12 +107,23 @@ export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
     return { statusCode: 200, headers: HEADERS, body: '' };
   }
 
+  const httpMethod = event.httpMethod || (event as any).requestContext?.http?.method || 'GET';
+  const path = event.path || (event as any).rawPath || '';
+
+  if (path === '/health') {
+    return jsonResponse(200, {
+      status: 'healthy',
+      service: 'mini-onboarding-backend',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   const sellerId = extractSellerId(event);
   if (!sellerId) {
     return jsonError(401, 'Unauthorized');
   }
 
-  switch (event.httpMethod) {
+  switch (httpMethod) {
     case 'POST':
       return handleCreate(event, sellerId);
     case 'GET':

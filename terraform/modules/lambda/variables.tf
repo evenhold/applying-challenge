@@ -56,7 +56,7 @@ variable "enricher_zip_path" {
 variable "node_runtime" {
   description = "Node.js runtime version for both Lambda functions"
   type        = string
-  default     = "nodejs20.x"
+  default     = "nodejs22.x"
 
   validation {
     condition     = contains(["nodejs20.x", "nodejs22.x"], var.node_runtime)
