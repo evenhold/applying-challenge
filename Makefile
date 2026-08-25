@@ -4,17 +4,17 @@
        cognito-setup \
        build-lambda build-frontend \
        infra-init infra-plan infra-apply infra-destroy infra-validate \
-       deploy deploy-infra \
+       deploy-frontend deploy-lambda \
        logs shell-frontend shell-backend floci-health clean
 
 # ==============================================================================
-# Desarrollo
+# DESARROLLO LOCAL — usa .env.local (FLOCI)
 # ==============================================================================
 
 help: ## Mostrar esta ayuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-dev: ## Levantar todo con docker compose (LOCAL)
+dev: ## Levantar todo con docker compose
 	docker compose --env-file .env.local up
 
 dev-frontend: ## Levantar solo frontend
@@ -27,7 +27,7 @@ dev-floci: ## Levantar solo FLOCI
 	docker compose --env-file .env.local up floci
 
 # ==============================================================================
-# Tests
+# TESTS (LOCAL)
 # ==============================================================================
 
 test: ## Ejecutar todos los tests
@@ -46,7 +46,7 @@ test-e2e: ## Ejecutar solo e2e tests
 	docker compose --env-file .env.local exec backend pnpm test:e2e
 
 # ==============================================================================
-# Base de datos (DynamoDB en FLOCI)
+# BASE DE DATOS (LOCAL — FLOCI)
 # ==============================================================================
 
 db-setup: ## Crear tabla merchants + GSIs en FLOCI
@@ -72,7 +72,7 @@ db-reset: ## Eliminar y recrear tabla (WARNING: borra datos)
 	bash scripts/seed-data.sh
 
 # ==============================================================================
-# Autenticación (Cognito en FLOCI)
+# AUTENTICACIÓN (LOCAL — Cognito en FLOCI)
 # ==============================================================================
 
 setup: ## Setup completo: Cognito + DynamoDB + SQS + datos de prueba
@@ -82,44 +82,7 @@ cognito-setup: ## Crear User Pool + App Client + Test User en FLOCI
 	bash scripts/setup-cognito.sh
 
 # ==============================================================================
-# Infraestructura
-# ==============================================================================
-
-build-lambda: ## Build Lambda ZIP files with esbuild
-	bash scripts/build-lambda.sh
-
-build-frontend: ## Build frontend static export for S3+CloudFront
-	bash scripts/build-frontend.sh
-
-infra-init: ## terraform init
-	docker compose --env-file .env.local run --rm infra init
-
-infra-plan: ## terraform plan
-	docker compose --env-file .env.local run --rm infra plan
-
-infra-apply: ## terraform apply (auto-approve para dev)
-	docker compose --env-file .env.local run --rm infra apply -auto-approve
-
-infra-destroy: ## terraform destroy
-	docker compose --env-file .env.local run --rm infra destroy
-
-infra-validate: ## terraform validate
-	docker compose --env-file .env.local run --rm infra validate
-
-# ==============================================================================
-# Deploy
-# ==============================================================================
-
-deploy-frontend: build-frontend ## Build + S3 sync + CloudFront invalidation
-	aws s3 sync frontend/out s3://$(FRONTEND_BUCKET) --delete
-	aws cloudfront create-invalidation --distribution-id $(CF_DISTRIBUTION_ID) --paths "/*"
-
-deploy-lambda: build-lambda ## Build + deploy Lambda ZIPs
-	@echo "📦 Lambda ZIPs ready in build/"
-	@echo "Run 'make infra-apply' to deploy via Terraform"
-
-# ==============================================================================
-# Utilidades
+# UTILIDADES (LOCAL)
 # ==============================================================================
 
 logs: ## Ver logs de todos los servicios
@@ -136,3 +99,36 @@ floci-health: ## Verificar FLOCI saludable
 
 clean: ## Limpiar contenedores y volúmenes
 	docker compose --env-file .env.local down -v --remove-orphans
+
+# ==============================================================================
+# PRODUCCION AWS — usa .env.production (credenciales AWS)
+# ==============================================================================
+
+build-lambda: ## Build Lambda ZIP files with esbuild
+	bash scripts/build-lambda.sh
+
+build-frontend: ## Build frontend static export for S3+CloudFront
+	bash scripts/build-frontend.sh
+
+infra-init: ## terraform init
+	docker compose --env-file .env.production run --rm infra init
+
+infra-plan: ## terraform plan
+	docker compose --env-file .env.production run --rm infra plan
+
+infra-apply: ## terraform apply
+	docker compose --env-file .env.production run --rm infra apply -auto-approve
+
+infra-destroy: ## terraform destroy
+	docker compose --env-file .env.production run --rm infra destroy
+
+infra-validate: ## terraform validate
+	docker compose --env-file .env.production run --rm infra validate
+
+deploy-frontend: build-frontend ## Build + S3 sync + CloudFront invalidation
+	docker compose --env-file .env.production run --rm awscli s3 sync frontend/out s3://mini-onboarding-frontend-dev --delete --region us-east-1
+	docker compose --env-file .env.production run --rm awscli cloudfront create-invalidation --distribution-id E2DHXR0SE82POU --paths "/*" --region us-east-1
+
+deploy-lambda: build-lambda ## Build + deploy Lambda ZIPs
+	@echo "📦 Lambda ZIPs ready in build/"
+	@echo "Run 'make infra-apply' to deploy via Terraform"
