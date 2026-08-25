@@ -22,6 +22,7 @@ const routes: Route[] = [
   { method: 'GET', pattern: '/merchants', handler: merchantsHandler },
   { method: 'GET', pattern: '/merchants/:id', handler: merchantsHandler },
   { method: 'PUT', pattern: '/merchants/:id', handler: merchantsHandler },
+  { method: 'DELETE', pattern: '/merchants/:id', handler: merchantsHandler },
 ];
 
 interface MatchResult {
