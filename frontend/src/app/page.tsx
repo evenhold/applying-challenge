@@ -168,11 +168,10 @@ function Dashboard({ onNew, onDetail }: { onNew: () => void; onDetail: (id: stri
   }, [fetchMerchants, tokens?.accessToken, merchants]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar este merchant?')) return;
     setDeletingId(id);
     try {
       await api.delete(`/merchants/${id}`, tokens?.accessToken);
-      setMerchants((prev) => prev.filter((m) => m.id !== id));
+      await fetchMerchants();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar');
     } finally {
