@@ -5,6 +5,7 @@ import {
   PutCommand,
   QueryCommand,
   UpdateCommand,
+  DeleteCommand,
 } from '@aws-sdk/lib-dynamodb';
 import type { CreateMerchantInput, Merchant, UpdateMerchantInput } from '../types/index.js';
 
@@ -147,4 +148,18 @@ export async function enrichMerchant(
   );
 
   return { ...existing, ...data, status: 'ready_to_submit', updatedAt: now };
+}
+
+export async function deleteMerchant(id: string): Promise<boolean> {
+  const existing = await getMerchant(id);
+  if (!existing) return false;
+
+  await docClient.send(
+    new DeleteCommand({
+      TableName: TABLE_NAME,
+      Key: { PK: id, SK: 'PROFILE' },
+    }),
+  );
+
+  return true;
 }

@@ -5,6 +5,7 @@ import { createMerchantUseCase } from '../usecases/merchants/create.js';
 import { getMerchantUseCase } from '../usecases/merchants/getById.js';
 import { listMerchantsUseCase } from '../usecases/merchants/list.js';
 import { updateMerchantUseCase } from '../usecases/merchants/update.js';
+import { deleteMerchantUseCase } from '../usecases/merchants/delete.js';
 import { extractSellerId } from '../usecases/shared/auth.js';
 
 const HEADERS = {
@@ -95,8 +96,20 @@ async function handleUpdate(event: LambdaEvent, sellerId: string): Promise<Lambd
     const raw = parseJsonBody(event);
     const parsed = updateMerchantSchema.parse(raw);
 
-    const merchant = await updateMerchantUseCase(id, sellerId, parsed);
+    const merchant = await updateMerchantUseCase(id, parsed);
     return jsonResponse(200, merchant);
+  } catch (error) {
+    return mapError(error);
+  }
+}
+
+async function handleDelete(event: LambdaEvent, sellerId: string): Promise<LambdaResponse> {
+  const id = event.pathParameters?.id;
+  if (!id) return jsonError(400, 'Merchant id is required');
+
+  try {
+    await deleteMerchantUseCase(id, sellerId);
+    return jsonResponse(200, { deleted: true });
   } catch (error) {
     return mapError(error);
   }
@@ -133,6 +146,8 @@ export async function handler(event: LambdaEvent): Promise<LambdaResponse> {
       return handleList(event, sellerId);
     case 'PUT':
       return handleUpdate(event, sellerId);
+    case 'DELETE':
+      return handleDelete(event, sellerId);
     default:
       return jsonError(405, 'Method not allowed');
   }

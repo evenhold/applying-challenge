@@ -187,6 +187,19 @@ body {
   width: auto;
 }
 
+.button-danger {
+  background: #dc2626;
+  color: white;
+}
+
+.button-danger:hover {
+  background: #b91c1c;
+}
+
+.button-danger:disabled {
+  opacity: 0.5;
+}
+
 .button-primary {
   background: var(--primary);
 }

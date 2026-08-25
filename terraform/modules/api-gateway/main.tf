@@ -106,6 +106,15 @@ resource "aws_apigatewayv2_route" "put_merchants_id" {
   authorization_type = "JWT"
 }
 
+resource "aws_apigatewayv2_route" "delete_merchants_id" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "DELETE /merchants/{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.merchants.id}"
+
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+  authorization_type = "JWT"
+}
+
 resource "aws_apigatewayv2_route" "health" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "GET /health"

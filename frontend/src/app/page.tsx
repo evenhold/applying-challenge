@@ -140,6 +140,9 @@ function Dashboard({ onNew, onDetail }: { onNew: () => void; onDetail: (id: stri
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const sorted = [...merchants].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const fetchMerchants = useCallback(async () => {
     try {
@@ -160,6 +163,19 @@ function Dashboard({ onNew, onDetail }: { onNew: () => void; onDetail: (id: stri
     const id = setInterval(fetchMerchants, POLL_MS);
     return () => clearInterval(id);
   }, [fetchMerchants, tokens?.accessToken, merchants]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Eliminar este merchant?')) return;
+    setDeletingId(id);
+    try {
+      await api.delete(`/merchants/${id}`, tokens?.accessToken);
+      setMerchants((prev) => prev.filter((m) => m.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <section className="dashboard">
@@ -192,7 +208,7 @@ function Dashboard({ onNew, onDetail }: { onNew: () => void; onDetail: (id: stri
               </tr>
             </thead>
             <tbody>
-              {merchants.map((m) => (
+              {sorted.map((m) => (
                 <tr key={m.id}>
                   <td>{m.id.substring(0, 15)}...</td>
                   <td>{m.documentType}</td>
@@ -200,7 +216,16 @@ function Dashboard({ onNew, onDetail }: { onNew: () => void; onDetail: (id: stri
                   <td>{m.businessName || '-'}</td>
                   <td><span className={`status-badge status-${m.status}`}>{m.status}</span></td>
                   <td>{new Date(m.createdAt).toLocaleString()}</td>
-                  <td><button onClick={() => onDetail(encodeURIComponent(m.id))} className="button button-small">Ver</button></td>
+                  <td>
+                    <button onClick={() => onDetail(encodeURIComponent(m.id))} className="button button-small">Ver</button>
+                    <button
+                      onClick={() => handleDelete(m.id)}
+                      className="button button-small button-danger"
+                      disabled={deletingId === m.id}
+                    >
+                      {deletingId === m.id ? '...' : 'Eliminar'}
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

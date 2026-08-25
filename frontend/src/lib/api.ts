@@ -47,6 +47,10 @@ class ApiClient {
   async put<T>(path: string, body: unknown, token?: string): Promise<T> {
     return this.request<T>(path, { method: 'PUT', body: JSON.stringify(body) }, token);
   }
+
+  async delete<T>(path: string, token?: string): Promise<T> {
+    return this.request<T>(path, { method: 'DELETE' }, token);
+  }
 }
 
 export interface Merchant {

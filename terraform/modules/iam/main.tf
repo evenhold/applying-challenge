@@ -39,6 +39,7 @@ data "aws_iam_policy_document" "lambda_merchants_permissions" {
       "dynamodb:PutItem",
       "dynamodb:GetItem",
       "dynamodb:UpdateItem",
+      "dynamodb:DeleteItem",
       "dynamodb:Query",
     ]
     resources = [
