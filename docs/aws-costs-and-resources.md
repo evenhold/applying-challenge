@@ -1,10 +1,94 @@
 # Costos y Recursos AWS
 
-Mini Onboarding — Inventario de recursos y análisis de costos
+Mini Onboarding — Inventario de recursos, análisis de costos y justificación de cada decisión
 
 ---
 
-## Recursos desplegados
+## ¿Por qué cada recurso AWS?
+
+### Lambda (Compute)
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| **¿Por qué Lambda y no EC2?** | EC2 cuesta $70+/mes 24/7 sin importar si hay tráfico. Lambda cobra solo cuando se invoca ($0.20/millón). Con 10K requests/mes, Lambda = $0.40 vs EC2 = $70 (175x más barato). |
+| **¿Por qué Lambda y no ECS Fargate?** | Fargate cuesta ~$15/mes mínimo (1 task corriendo 24/7). Lambda no tiene costo base. ECS requiere task definitions, service discovery, health checks. Lambda es más simple para functions individuales. |
+| **¿Por qué 2 funciones y no 1?** | Separación de concerns: `merchants` maneja HTTP (10s timeout, 128MB). `enricher` procesa SQS (60s timeout, 256MB). Si estuviéramos juntos, un enricher lento bloquearía requests HTTP. |
+| **¿Por qué nodejs22.x?** | LTS hasta 2027. Node 20 está deprecado (abril 2026). Node 24 no está soportado por el provider Terraform v5.100.0. |
+| **¿Por qué 128MB merchants / 256MB enricher?** | Merchants hace CRUD simple (DynamoDB + SQS). Enricher hace SUNAT mock (delay 1-5s) + DynamoDB + SES. Más memoria = más CPU proporcional. |
+
+### API Gateway (Routing)
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| **¿Por qué HTTP API v2 y no REST API?** | HTTP API es 71% más barata ($1/millón vs $3.50/millón). Soporta JWT authorizer nativo. Para CRUD simple, HTTP API es suficiente. |
+| **¿Por qué no ALB + Lambda?** | ALB cuesta $16+/mes fijo + $0.008/hora por target group. API Gateway cobra solo por request. Más barato y más simple. |
+| **¿Por qué Cognito Authorizer y no API key?** | Cognito valida tokens JWT de vendedores reales. API keys son para machine-to-machine. Necesitamos autenticar personas, no servicios. |
+
+### DynamoDB (Database)
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| **¿Por qué DynamoDB y no RDS?** | RDS t3.micro cuesta $15+/mes 24/7 + backups + patching. DynamoDB cobra solo por reads/writes ($0.25/millón). Con pocos items, DynamoDB = $0.00 vs RDS = $15. |
+| **¿Por qué on-demand y no provisioned?** | On-demand escala automáticamente sin configurar capacity. Para un app nueva con tráfico impredecible, es más seguro. Provisioned requiere estimar WCU/RCU. |
+| **¿Por qué single-table design?** | Patrón DynamoDB estándar: PK=merchantId, SK=PROFILE. GSI1 para query por seller, GSI2 para query por status. Un solo scan da todos los merchants. |
+| **¿Por qué 2 GSIs?** | GSI1 (`SELLER#sellerId`): listar merchants de un seller (dashboard). GSI2 (`STATUS#status`): filtrar por estado (pendientes, enriquecidos). Sin GSIs, tendríamos que scan completo. |
+
+### SQS (Messaging)
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| **¿Por qué SQS y no EventBridge?** | SQS es simple: cola FIFO o estándar, DLQ, retry automático. EventBridge es para event routing complejo (multi-target, pattern matching). Para un solo consumer (enricher), SQS es más barato y directo. |
+| **¿Por qué no synchronous?** | SUNAT mock tarda 1-5s. Si fuera sync, el usuario esperaría 5s después de crear el merchant. Async: crea en 100ms, el worker procesa en background. |
+| **¿Por qué DLQ?** | Si el enricher falla 3 veces, el mensaje va a DLQ en vez de perderse. Permite revisar mensajes fallidos manualmente o con un Lambda de retry. |
+
+### Cognito (Auth)
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| **¿Por qué Cognito y no custom auth?** | Custom auth requiere: hash de passwords, JWT signing, refresh tokens, MFA, account recovery. Cognito maneja todo esto. Con 50K MAU gratis, no hay razón para custom. |
+| **¿Por qué USER_PASSWORD_AUTH y no ALLOW_USER_SRP_AUTH?** | SRP es más seguro pero requiere cliente SRP. Para una SPA simple, USER_PASSWORD_AUTH es suficiente con HTTPS. SRP es mejor para apps móviles. |
+| **¿Por qué hosted domain?** | El hosted domain de Cognito maneja forgot password, MFA, account verification. Sin él, tendríamos que construir esas pantallas manualmente. |
+
+### SES (Email)
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| **¿Por qué SES y no SendGrid/Mailgun?** | SES cobra $0.10/mil emails vs SendGrid $20/mes mínimo. Para una app que envía ~500 emails/mes, SES es 200x más barato. |
+| **¿Por qué sandbox mode?** | SES sandbox solo envía a emails verificados. Es gratis y seguro para desarrollo. Para producción, se solicita acceso completo ($0). |
+
+### S3 + CloudFront (Hosting)
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| **¿Por qué S3+CloudFront y no Vercel/Netlify?** | Vercel/Netlify son excellent para deploy, pero no tenemos control sobre la infraestructura. S3+CloudFront es parte del challenge (demostrar conocimiento de AWS). |
+| **¿Por qué no ECS/Nginx?** | ECS requiere un contenedor corriendo 24/7 ($15+/mes). S3+CloudFront es estático, cobra solo por transfer ($0.085/GB). Para un SPA, estático es suficiente. |
+| **¿Por qué OAC y no OAI?** | OAI es legacy. OAC soporta server-side encryption con SSE-KMS y bucket policies más granulares. AWS recomienda OAC para nuevos distributions. |
+
+### CloudWatch + X-Ray (Observability)
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| **¿Por qué X-Ray y no Datadog/NewRelic?** | X-Ray es nativo de AWS, sin costo adicional por agente. Datadog cobra $15/host/mes. Para un proyecto pequeño, X-Ray es suficiente. |
+| **¿Por qué retención 7 días?** | Logs de Lambda son baratos pero se acumulan. 7 días es suficiente para debugging. Si necesitamos más, CloudWatch Logs Insights permite query históricos. |
+| **¿Por qué 1 alarm y no más?** | El alarm `enricher-errors` cubre el caso más crítico: si el enriquecimiento falla, los merchants se quedan en `pending_enrichment` indefinidamente. Más alarmas se agregan cuando se necesite. |
+
+### WAF (Security) — Deshabilitado
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| **¿Por qué WAF deshabilitado?** | El WAF REGIONAL es incompatible con CloudFront GLOBAL (requieren 2 WebACLs). Para una app básica, la arquitectura serverless ya cubre OWASP A01-A06,A08-A10. El costo adicional de $8/mes no justifica la protección incremental. |
+| **¿Cuándo habilitarlo?** | Cuando la app tenga tráfico real y usuarios externos. Para evaluación/demo, el riesgo es mínimo. |
+
+### IAM (Permissions)
+
+| Pregunta | Respuesta |
+|----------|-----------|
+| **¿Por qué roles separados?** | Least-privilege: merchants solo puede leer/escribir DynamoDB + enviar a SQS. Enricher solo puede leer DynamoDB + recibir de SQS + enviar email. Si un Lambda es comprometido, el daño es limitado. |
+| **¿Por qué inline policies y no managed?** | Para este proyecto, inline policies son más simples y directas. Managed policies son mejores cuando múltiples roles comparten los mismos permisos. |
+
+---
+
+## Resumen de decisiones
 
 ### Conteo por servicio
 
