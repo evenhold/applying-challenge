@@ -105,14 +105,19 @@ body {
   margin-top: 1.5rem;
 }
 
-.form-footer a {
-  color: var(--muted);
-  text-decoration: none;
+.button-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
   font-size: 0.875rem;
+  padding: 0;
+  transition: color 0.2s;
 }
 
-.form-footer a:hover {
-  color: var(--foreground);
+.button-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
 }
 
 /* Dashboard styles */
