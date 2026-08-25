@@ -12,7 +12,7 @@ El sistema está diseñado para fallar de forma controlada. Ningún componente e
 Cola principal: merchants-enrichment
 DLQ: merchants-enrichment-dlq
 maxReceiveCount: 3 (reintentos antes de DLQ)
-messageRetentionPeriod: 4 días (1209600 seconds)
+messageRetentionPeriod: 14 días (1209600 seconds)
 ```
 
 ### Flujo de falla
@@ -47,7 +47,7 @@ aws sqs send-message --queue-url <main-queue-url> --message-body <body>
 ### Lambda Sync (enricher via SQS)
 
 - **SQS retry**: maxReceiveCount = 3
-- **Visibility timeout**: 30 segundos entre reintentos
+- **Visibility timeout**: 300 segundos (5 minutos) entre reintentos
 - **DLQ**: Mensajes fallidos van a merchants-enrichment-dlq
 
 ### HTTP a SUNAT API
@@ -133,7 +133,7 @@ function validateMessage(body: unknown): body is EnrichmentMessage {
 |-----------|---------|-------------------|
 | API Gateway | 29 segundos | 504 Gateway Timeout |
 | Lambda createMerchant | 10 segundos | Retry automático |
-| Lambda enricher | 30 segundos | SQS retry → DLQ |
+| Lambda enricher | 60 segundos | SQS retry → DLQ |
 | HTTP SUNAT API | 5 segundos | Error → SQS retry |
 | DynamoDB | 5 segundos (default) | Excepción → Lambda retry |
 

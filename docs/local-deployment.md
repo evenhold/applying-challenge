@@ -283,10 +283,10 @@ make dev-floci          # Solo FLOCI
 ### Tests
 
 ```bash
-make test               # Todos los tests (105)
-make test-unit          # Unit tests (84)
-make test-frontend      # Frontend tests (10)
-make test-integration   # Integration tests (11, requiere backend corriendo)
+make test               # Todos los tests (18 archivos)
+make test-unit          # Unit tests (14 archivos en backend/src/)
+make test-frontend      # Frontend tests (2 archivos)
+make test-integration   # Integration tests (2 archivos, requiere backend corriendo)
 ```
 
 ### Base de datos

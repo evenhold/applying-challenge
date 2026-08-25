@@ -38,9 +38,9 @@ applying/
 │   ├── Dockerfile.infra     # Terraform + AWS CLI
 │   └── nginx.conf           # Config Nginx para frontend
 │
-├── frontend/                # NextJS 15
+├── frontend/                # NextJS 16
 ├── backend/                 # Lambda handlers (Node.js)
-├── infrastructure/          # Terraform modules
+├── terraform/               # Terraform modules
 ├── tests/                   # E2E tests
 └── docs/                    # ADRs + documentación
 ```
@@ -111,7 +111,7 @@ aws --endpoint-url=http://localhost:4566 dynamodb list-tables
 
 | Variable | Descripción | Default |
 |---|---|---|
-| `AWS_ENDPOINT_URL` | URL de FLOCI | `http://localhost:4566` |
+| `AWS_ENDPOINT_URL` | URL de FLOCI | `http://floci:4566` |
 | `AWS_REGION` | Región AWS | `us-east-1` |
 | `AWS_ACCESS_KEY_ID` | Access key (fake para local) | `test` |
 | `AWS_SECRET_ACCESS_KEY` | Secret key (fake para local) | `test` |

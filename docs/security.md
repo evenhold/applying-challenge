@@ -72,10 +72,10 @@ await docClient.send(new PutCommand({
 | Componente | Configuración segura |
 |-----------|---------------------|
 | API Gateway | CORS restrictivo en producción, solo origins permitidos |
-| Lambda | Runtime más reciente (Node.js 24), minimal permissions |
+| Lambda | Runtime más reciente (Node.js 22), minimal permissions |
 | DynamoDB | Encryption at rest, point-in-time recovery |
 | S3 | Block public access, encryption |
-| CloudFront | WAF habilitado |
+| CloudFront | WAF: deshabilitado (diseñado pero incompatible con CloudFront GLOBAL) |
 
 ### A06:2021 — Vulnerable Components
 

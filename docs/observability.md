@@ -7,7 +7,7 @@ Frontend → CloudFront access logs
 API Gateway → access logs → CloudWatch
 Lambda → structured logs → CloudWatch
 Lambda → traces → X-Ray
-DynamoDB → CloudTrail + metrics
+DynamoDB → metrics → CloudWatch
 SQS → metrics → CloudWatch
 SES → delivery logs → CloudWatch
 ```

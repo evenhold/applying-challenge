@@ -7,12 +7,11 @@ frontend/
 ├── src/
 │   ├── app/                    # App Router (NextJS 16)
 │   │   ├── layout.tsx          # Layout raíz
-│   │   ├── page.tsx            # Página principal (landing)
-│   │   ├── globals.css         # Estilos globales
-│   │   └── login/
-│   │       └── page.tsx        # Login placeholder
+│   │   ├── page.tsx            # SPA principal (todas las vistas)
+│   │   └── globals.css         # Estilos globales
 │   ├── lib/
-│   │   └── api.ts              # API client
+│   │   ├── api.ts              # API client
+│   │   └── auth.ts             # Cognito auth
 │   └── types/
 │       └── index.ts            # Tipos TypeScript
 ├── tests/
@@ -78,8 +77,9 @@ pnpm format           # Formatear todo
 
 | Ruta | Descripción |
 |---|---|
-| `/` | Landing page con botón de login |
-| `/login` | Formulario de login (placeholder) |
+| `/` | SPA principal con navegación via useState (home, login, dashboard, merchants/new, merchants/detail) |
+
+**Nota**: La aplicación es un SPA (Single Page Application) con todas las vistas en un solo archivo `page.tsx`. No hay router de NextJS.
 
 ## API Client
 

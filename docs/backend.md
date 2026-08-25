@@ -1,4 +1,4 @@
-# Backend - Node.js 24 + Lambda
+# Backend - Node.js 22 + Lambda
 
 ## Estructura
 
@@ -37,7 +37,7 @@ backend/
 
 | Componente | Versión |
 |---|---|
-| Node.js | 24.x |
+| Node.js | 22.x (Lambda) / 24.x (local dev) |
 | TypeScript | 7.x |
 | Vitest | 3.x |
 | Biome | 2.5.8 |
@@ -94,6 +94,7 @@ Esto permite probar todos los endpoints sin configurar Cognito.
 | `GET` | `/merchants` | Sí | Listar merchants del seller autenticado |
 | `GET` | `/merchants/:id` | Sí | Obtener merchant por ID |
 | `PUT` | `/merchants/:id` | Sí | Actualizar merchant |
+| `DELETE` | `/merchants/:id` | Sí | Eliminar merchant |
 
 ---
 
@@ -261,7 +262,7 @@ curl http://localhost:3001/health
 # → {"status":"healthy","service":"mini-onboarding-backend","timestamp":"..."}
 
 curl http://localhost:3001/hello
-# → {"message":"Hello from Mini Onboarding backend!","timestamp":"..."}
+# → {"message":"Hello World from Mini Onboarding API","timestamp":"..."}
 ```
 
 ### Listar merchants (mock auth)

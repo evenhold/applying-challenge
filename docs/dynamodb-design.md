@@ -35,7 +35,7 @@ Si en el futuro necesitamos datos del seller en DynamoDB (nombre, empresa, confi
 
 ## Tabla Principal
 
-**Nombre**: `merchants`
+**Nombre**: `${project}-${environment}-merchants` (ej. `mini-onboarding-dev-merchants`)
 
 ### Keys
 

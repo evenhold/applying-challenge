@@ -67,6 +67,8 @@
 | WAF rules             | 10 rules  | $1.00/rule     | $10.00        |
 | **Subtotal Security** |           |                | **$15.00**    |
 
+**Nota**: WAF está **deshabilitado** actualmente (incompatible con CloudFront GLOBAL). El costo real sin WAF es ~$7.15/mes.
+
 ## Total Mensual
 
 | Categoría     | Costo      |
@@ -77,16 +79,21 @@
 | Messaging     | $0.05      |
 | Auth          | $0.55      |
 | Observability | $4.00      |
-| Security      | $15.00     |
-| **TOTAL**     | **$22.15** |
+| Security      | $0.00 (WAF deshabilitado) |
+| **TOTAL**     | **$7.15**  |
+
+**Con WAF habilitado**: $22.15/mes
 
 ## Notas sobre WAF
 
-El WAF es el costo más alto ($15/mes). Opciones:
+El WAF está **deshabilitado** actualmente porque es incompatible con CloudFront GLOBAL (requiere 2 WebACLs). 
 
-1. **Mantener WAF**: Protección OWASP Top 10, vale la pena para producción
+**Costo actual sin WAF**: ~$7.15/mes
+
+Opciones para habilitar WAF:
+1. **Mantener WAF deshabilitado**: Para app básica/demo, la arquitectura serverless ya cubre OWASP A01-A06,A08-A10
 2. **WAF básico**: Solo regla managed rule ($5/mes) en vez de 10 custom
-3. **Sin WAF**: Solo para desarrollo/prueba ($7/mes total)
+3. **WAF completo**: 10 reglas OWASP ($15/mes) - para producción con tráfico real
 
 ## Palancas de Costo
 
