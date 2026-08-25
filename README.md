@@ -137,7 +137,6 @@ make clean             # Limpiar todo
 | [AWS Costs & Resources](docs/aws-costs-and-resources.md) | Costos y recursos AWS desplegados |
 | [AWS Observability Commands](docs/aws-observability-commands.md) | Comandos para logs, traces, métricas |
 | [Production Checklist](docs/production-checklist.md) | Checklist para deploy a AWS |
-| [ADRs](docs/ADR/) | Architecture Decision Records |
-| [AI Usage](docs/ai-usage.md) | Nota de uso de IA |
+| [ADRs](docs/adr/) | Architecture Decision Records |
 | [Challenge](CHALLENGE.md) | Requisitos del evaluation |
 | [Overview](PROJECT_OVERVIEW.md) | Overview del proyecto |
