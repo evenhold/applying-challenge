@@ -17,6 +17,9 @@ function AppContent() {
     if (!isLoading && isAuthenticated && (view === 'home' || view === 'login')) {
       setView('dashboard');
     }
+    if (!isLoading && !isAuthenticated && view !== 'home' && view !== 'login') {
+      setView('home');
+    }
   }, [isAuthenticated, isLoading, view]);
 
   if (isLoading) return <Shell><p>Cargando...</p></Shell>;
