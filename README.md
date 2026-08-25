@@ -44,9 +44,11 @@ make clean             # Limpiar todo
 
 | Documento | Descripción |
 |---|---|
-| [Local Deployment](docs/local-deployment.md) | Guía completa de despliegue local (paso a paso) |
+| [Local Deployment](docs/local-deployment.md) | Guía completa de despliegue local |
 | [Getting Started](docs/getting-started.md) | Inicio rápido y desarrollo |
 | [Architecture](docs/architecture.md) | Diagrama de arquitectura |
+| [OWASP Top 10 Compliance](docs/owasp-top10-compliance.md) | Evaluación de cumplimiento OWASP |
+| [AWS Costs & Resources](docs/aws-costs-and-resources.md) | Costos y recursos AWS desplegados |
 | [Production Checklist](docs/production-checklist.md) | Checklist para deploy a AWS |
 | [ADRs](docs/ADR/) | Architecture Decision Records |
 | [AI Usage](docs/ai-usage.md) | Nota de uso de IA |
