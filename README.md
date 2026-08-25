@@ -131,12 +131,11 @@ make clean             # Limpiar todo
 
 | Documento | Descripción |
 |---|---|
-| [Local Deployment](docs/local-deployment.md) | Guía completa de despliegue local |
+| [Local Deployment](docs/local-deployment.md) | Guía de despliegue local + deploy a AWS |
 | [Architecture](docs/architecture.md) | Diagrama de arquitectura |
 | [OWASP Top 10 Compliance](docs/owasp-top10-compliance.md) | Evaluación de cumplimiento OWASP |
 | [AWS Costs & Resources](docs/aws-costs-and-resources.md) | Costos y recursos AWS desplegados |
 | [AWS Observability Commands](docs/aws-observability-commands.md) | Comandos para logs, traces, métricas |
-| [Production Checklist](docs/production-checklist.md) | Checklist para deploy a AWS |
 | [ADRs](docs/adr/) | Architecture Decision Records |
 | [Challenge](CHALLENGE.md) | Requisitos del evaluation |
 | [Overview](PROJECT_OVERVIEW.md) | Overview del proyecto |

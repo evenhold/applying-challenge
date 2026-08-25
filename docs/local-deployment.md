@@ -488,10 +488,116 @@ Worker → SQS (polling cada 2s)
 
 ---
 
+## 8. Deploy a AWS
+
+### Visión general
+
+```
+DEV (Docker + FLOCI):
+  Browser → NextJS Dev Server (:3000)
+    → /api/* (proxy routes)
+    → Backend (:3001) → FLOCI (:4566)
+    → Worker (polling SQS cada 2s)
+
+PROD (AWS):
+  Browser → S3 + CloudFront (estático)
+    → API Gateway → Lambda handlers
+    → SQS Event Source Mapping → Lambda enricher
+    → DynamoDB real
+    → Cognito real
+    → SES real
+```
+
+### Qué funciona igual (sin cambios)
+
+| Componente | Archivo(s) | Por qué |
+|------------|-----------|---------|
+| Lógica de negocio | `usecases/*` | Funciones puras, sin dependencia de infra |
+| Lambda handlers | `handlers/merchants.ts`, `handlers/enricher.ts` | Ya escritos como Lambda handlers |
+| Validación Zod | `schemas/*` | Runtime validation, idéntica |
+| Types TypeScript | `types/*` | Tipos puros |
+| DynamoDB client | `lib/dynamodb.ts` | `endpoint: undefined` → apunta a AWS real |
+| SQS client | `lib/sqs.ts` | `endpoint: undefined` → apunta a AWS real |
+| SES client | `lib/ses.ts` | `endpoint: undefined` → apunta a AWS real |
+| API Client frontend | `lib/api.ts` | Usa `NEXT_PUBLIC_API_URL` configurable |
+| Auth frontend | `lib/auth.ts` | Usa `NEXT_PUBLIC_COGNITO_URL` configurable |
+
+### Qué NO se despliega a producción
+
+| Archivo | En DEV | En PROD | Reemplazo |
+|---------|--------|---------|-----------|
+| `server.ts` | HTTP server Node.js en `:3001` | **No se usa** | API Gateway |
+| `router.ts` | Routing manual `findHandler()` | **No se usa** | API Gateway route config |
+| `worker.ts` | SQS polling loop cada 2s | **No se usa** | SQS Event Source Mapping → Lambda |
+| `frontend/src/app/api/*` | Proxy CORS a FLOCI/Backend | **No existen** en build estático | API Gateway |
+
+### Variables de entorno que cambian
+
+| Variable | DEV | PROD |
+|----------|-----|------|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3000/api` | `https://<api-id>.execute-api.<region>.amazonaws.com` |
+| `NEXT_PUBLIC_COGNITO_URL` | `http://localhost:3000/api` | `https://cognito-idp.<region>.amazonaws.com` |
+| `SQS_QUEUE_URL` | `http://floci:4566/000000000000/merchants-enrichment` | `https://sqs.<region>.amazonaws.com/<account-id>/merchants-enrichment` |
+| `SES_SENDER_EMAIL` | `noreply@mini-onboarding.local` | Email verificado en SES |
+| `DYNAMODB_TABLE` | `merchants` | `merchants` (mismo nombre) |
+| `COGNITO_USER_POOL_ID` | Generado por FLOCI | Generado por Terraform |
+| `COGNITO_CLIENT_ID` | Generado por FLOCI | Generado por Terraform |
+
+### Variables que se ELIMINAN de producción
+
+| Variable | Por qué |
+|----------|---------|
+| `AWS_ENDPOINT_URL` | Lambda usa IAM Role para AWS real |
+| `FLOCI_HOSTNAME` | No existe en AWS |
+| `AUTH_MOCK` | NUNCA en producción — requiere JWT real |
+| `COGNITO_ENDPOINT` | No se necesita |
+| `BACKEND_URL` | No se necesita |
+| `AWS_ACCESS_KEY_ID` | Lambda usa IAM Role |
+| `AWS_SECRET_ACCESS_KEY` | Lambda usa IAM Role |
+
+### Checklist de deploy
+
+```bash
+# 1. Pre-deploy
+make build-lambda                    # Build ZIPs para Lambda
+
+# 2. Infraestructura
+make infra-init                      # terraform init
+make infra-plan                      # Ver cambios
+make infra-apply                     # Deploy infraestructura
+
+# 3. Frontend
+make build-frontend                  # Build + S3 sync + CloudFront invalidation
+
+# 4. Verificar
+curl https://<api-url>/health        # Health check
+# Login con Cognito real
+# Crear merchant
+# Verificar enrichment async
+# Verificar email SES
+# Verificar CloudWatch logs
+```
+
+### Rollback
+
+Si algo falla después del deploy:
+
+```bash
+# 1. Revertir frontend (S3)
+aws s3 sync s3://<bucket>-backup s3://<bucket> --delete
+
+# 2. Revertir Lambda (si se actualizó el código)
+terraform apply -target=lambda_function.merchants -var="image_tag=previous"
+
+# 3. Revertir Terraform completo
+terraform apply -auto-approve  # con el estado anterior
+```
+
+---
+
 ## Siguientes pasos
 
 Una vez que la aplicación funcione en local:
 
-1. [Guía de Deploy AWS](production-checklist.md) — Cómo subir a AWS real
-2. [Architecture](architecture.md) — Diagrama de arquitectura completo
-3. [Backend API](backend.md) — Documentación de endpoints
+1. [Architecture](architecture.md) — Diagrama de arquitectura completo
+2. [Backend API](backend.md) — Documentación de endpoints
