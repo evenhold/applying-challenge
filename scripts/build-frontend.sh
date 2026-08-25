@@ -28,9 +28,7 @@ CID=$(docker create \
   sh -c '
     corepack enable && corepack prepare pnpm@latest --activate
     pnpm install --no-frozen-lockfile --ignore-scripts
-    mv src/app/api src/_api_backup 2>/dev/null || true
     pnpm exec next build
-    mv src/_api_backup src/app/api 2>/dev/null || true
     grep -rl qiq4nwptz1 out/ | head -3
   '
 )
