@@ -199,7 +199,7 @@ function Dashboard({ onNew, onDetail }: { onNew: () => void; onDetail: (id: stri
                   <td>{m.documentNumber}</td>
                   <td>{m.businessName || '-'}</td>
                   <td><span className={`status-badge status-${m.status}`}>{m.status}</span></td>
-                  <td>{new Date(m.createdAt).toLocaleDateString()}</td>
+                  <td>{new Date(m.createdAt).toLocaleString()}</td>
                   <td><button onClick={() => onDetail(encodeURIComponent(m.id))} className="button button-small">Ver</button></td>
                 </tr>
               ))}
