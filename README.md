@@ -49,6 +49,7 @@ make clean             # Limpiar todo
 | [Architecture](docs/architecture.md) | Diagrama de arquitectura |
 | [OWASP Top 10 Compliance](docs/owasp-top10-compliance.md) | Evaluación de cumplimiento OWASP |
 | [AWS Costs & Resources](docs/aws-costs-and-resources.md) | Costos y recursos AWS desplegados |
+| [AWS Observability Commands](docs/aws-observability-commands.md) | Comandos para logs, traces, métricas |
 | [Production Checklist](docs/production-checklist.md) | Checklist para deploy a AWS |
 | [ADRs](docs/ADR/) | Architecture Decision Records |
 | [AI Usage](docs/ai-usage.md) | Nota de uso de IA |
