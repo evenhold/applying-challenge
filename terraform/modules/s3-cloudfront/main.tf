@@ -83,6 +83,39 @@ resource "aws_cloudfront_origin_access_control" "frontend" {
 # CloudFront — Distribution
 # ──────────────────────────────────────────────────────────────
 
+resource "aws_cloudfront_response_headers_policy" "security_headers" {
+  name = "${var.project}-${var.environment}-security-headers"
+
+  security_headers_config {
+    content_type_options {
+      override = true
+    }
+    frame_options {
+      frame_option = "DENY"
+      override     = true
+    }
+    strict_transport_security {
+      access_control_max_age_sec = 63072000
+      include_subdomains         = true
+      preload                    = true
+      override                   = true
+    }
+    xss_protection {
+      mode_block = true
+      protection = true
+      override   = true
+    }
+    referrer_policy {
+      referrer_policy = "strict-origin-when-cross-origin"
+      override        = true
+    }
+    content_security_policy {
+      content_security_policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://cognito-idp.*.amazonaws.com https://*.execute-api.*.amazonaws.com; frame-ancestors 'none';"
+      override                = true
+    }
+  }
+}
+
 resource "aws_cloudfront_distribution" "frontend" {
   enabled             = true
   is_ipv6_enabled     = true
@@ -106,6 +139,7 @@ resource "aws_cloudfront_distribution" "frontend" {
     default_ttl            = 86400
     min_ttl                = 0
     max_ttl                = 31536000
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security_headers.id
 
     forwarded_values {
       query_string = false
