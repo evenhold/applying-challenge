@@ -132,3 +132,38 @@ deploy-frontend: build-frontend ## Build + S3 sync + CloudFront invalidation
 deploy-lambda: build-lambda ## Build + deploy Lambda ZIPs
 	@echo "📦 Lambda ZIPs ready in build/"
 	@echo "Run 'make infra-apply' to deploy via Terraform"
+
+# ==============================================================================
+# OBSERVABILIDAD AWS
+# ==============================================================================
+
+logs-merchants: ## Logs del merchants Lambda (últimos 5 min)
+	docker compose --env-file .env.production run --rm awscli logs tail \
+		/aws/lambda/mini-onboarding-dev-merchants \
+		--since 5m --region us-east-1 --format short
+
+logs-enricher: ## Logs del enricher Lambda (últimos 5 min)
+	docker compose --env-file .env.production run --rm awscli logs tail \
+		/aws/lambda/mini-onboarding-dev-enricher \
+		--since 5m --region us-east-1 --format short
+
+logs-apigw: ## Access logs de API Gateway (últimos 5 min)
+	docker compose --env-file .env.production run --rm awscli logs tail \
+		/aws/apigateway/mini-onboarding-dev \
+		--since 5m --region us-east-1 --format short
+
+sqs-status: ## Estado de la cola SQS
+	docker compose --env-file .env.production run --rm awscli sqs get-queue-attributes \
+		--queue-url https://sqs.us-east-1.amazonaws.com/459321894062/mini-onboarding-dev-enrichment \
+		--attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible \
+		--region us-east-1
+
+alarm-status: ## Estado de las alarmas CloudWatch
+	docker compose --env-file .env.production run --rm awscli cloudwatch describe-alarms \
+		--alarm-name-prefix mini-onboarding --region us-east-1
+
+xray-traces: ## Traces recientes de X-Ray (última hora)
+	docker compose --env-file .env.production run --rm awscli xray get-trace-summaries \
+		--start-time $$(date -d '1 hour ago' +%s) \
+		--end-time $$(date +%s) \
+		--region us-east-1
