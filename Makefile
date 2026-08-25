@@ -137,20 +137,25 @@ deploy-lambda: build-lambda ## Build + deploy Lambda ZIPs
 # OBSERVABILIDAD AWS
 # ==============================================================================
 
-logs-merchants: ## Logs del merchants Lambda (últimos 5 min)
+logs-merchants: ## Logs del merchants Lambda (tiempo real)
 	docker compose --env-file .env.production run --rm awscli logs tail \
 		/aws/lambda/mini-onboarding-dev-merchants \
-		--since 5m --region us-east-1 --format short
+		--follow --region us-east-1 --format short
 
-logs-enricher: ## Logs del enricher Lambda (últimos 5 min)
+logs-enricher: ## Logs del enricher Lambda (tiempo real)
 	docker compose --env-file .env.production run --rm awscli logs tail \
 		/aws/lambda/mini-onboarding-dev-enricher \
-		--since 5m --region us-east-1 --format short
+		--follow --region us-east-1 --format short
 
-logs-apigw: ## Access logs de API Gateway (últimos 5 min)
+logs-apigw: ## Access logs de API Gateway (tiempo real)
 	docker compose --env-file .env.production run --rm awscli logs tail \
 		/aws/apigateway/mini-onboarding-dev \
-		--since 5m --region us-east-1 --format short
+		--follow --region us-east-1 --format short
+
+logs-all: ## Logs de todos los servicios Lambda (tiempo real)
+	docker compose --env-file .env.production run --rm awscli logs tail \
+		--log-group-name-pattern "/aws/lambda/mini-onboarding" \
+		--follow --region us-east-1 --format short
 
 sqs-status: ## Estado de la cola SQS
 	docker compose --env-file .env.production run --rm awscli sqs get-queue-attributes \
