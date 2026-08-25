@@ -293,7 +293,7 @@ function MerchantDetailPage({ merchantId, onBack }: { merchantId: string; onBack
     if (!merchant) return;
     setIsConfirming(true);
     try {
-      const updated = await api.put<Merchant>('/merchants/placeholder', { status: 'submitted' }, tokens?.accessToken);
+      const updated = await api.put<Merchant>(`/merchants/${merchantId}`, { status: 'submitted' }, tokens?.accessToken);
       setMerchant(updated);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al confirmar');
@@ -318,6 +318,8 @@ function MerchantDetailPage({ merchantId, onBack }: { merchantId: string; onBack
           <div className="info-row"><label>Nombre:</label><span>{merchant.businessName || '-'}</span></div>
           <div className="info-row"><label>Email:</label><span>{merchant.email || '-'}</span></div>
           <div className="info-row"><label>Estado:</label><span className={`status-badge status-${merchant.status}`}>{merchant.status}</span></div>
+          <div className="info-row"><label>Creado:</label><span>{new Date(merchant.createdAt).toLocaleString()}</span></div>
+          <div className="info-row"><label>Actualizado:</label><span>{new Date(merchant.updatedAt).toLocaleString()}</span></div>
           {merchant.status === 'ready_to_submit' && (
             <div className="actions">
               <button onClick={handleConfirm} className="button button-primary" disabled={isConfirming}>
