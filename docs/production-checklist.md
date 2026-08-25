@@ -299,8 +299,10 @@ dynamodb_table = "merchants"
 
 ## 9. Costos estimados (optimizados para app básica)
 
+### Costo actual (desplegado)
+
 ```
-Producción (bajo tráfico, ~10K requests/mes):
+Producción actual (bajo tráfico, sin WAF):
   Lambda merchants (128MB):   $0.40/mes
   Lambda enricher (256MB):    $0.40/mes
   DynamoDB (on-demand):       $0.04/mes
@@ -309,11 +311,17 @@ Producción (bajo tráfico, ~10K requests/mes):
   Cognito (100 MAU):          $0.55/mes
   SES:                        $0.05/mes
   S3 + CloudFront:            $0.52/mes
-  WAF (3 reglas OWASP):       $8.00/mes
-  CloudWatch + X-Ray:         $0.80/mes
+  X-Ray:                      $0.50/mes
+  CloudWatch (logs+alarm+dash):$0.30/mes
   ─────────────────────────────────────────
-  TOTAL:                      ~$10.86/mes
-  Sin WAF:                    ~$2.86/mes (pero sin protección OWASP)
+  TOTAL:                      ~$2.86/mes
+```
+
+### Costo con WAF (opcional)
+
+```
+  + WAF (3 rules OWASP):     $8.00/mes
+  TOTAL con WAF:              ~$10.86/mes
 ```
 
 ### Detalle de costos por servicio
@@ -335,18 +343,18 @@ Producción (bajo tráfico, ~10K requests/mes):
 
 ### OWASP Top 10 — cobertura WAF
 
-| OWASP # | Vulnerabilidad | WAF Rule | Estado |
-|---------|----------------|----------|--------|
-| A01 | Broken Access Control | Cognito Authorizer | ✅ |
-| A02 | Cryptographic Failures | HTTPS everywhere | ✅ |
-| A03 | Injection | AWSManagedRulesCommonRuleSet | ✅ |
-| A04 | Insecure Design | Arquitectura serverless | ✅ |
-| A05 | Security Misconfiguration | AWSManagedRulesCommonRuleSet | ✅ |
-| A06 | Vulnerable Components | Managed by AWS | ✅ |
-| A07 | XSS | AWSManagedRulesCommonRuleSet | ✅ |
-| A08 | Data Integrity | DynamoDB + S3 encryption | ✅ |
-| A09 | Logging | CloudWatch + X-Ray | ✅ |
-| A10 | SSRF | AWSManagedRulesKnownBadInputsRuleSet | ✅ |
+| OWASP # | Vulnerabilidad | Control | Estado | Implementado |
+|---------|----------------|---------|--------|--------------|
+| A01 | Broken Access Control | Cognito JWT Authorizer | ✅ | Sí — routes protegidas excepto /health |
+| A02 | Cryptographic Failures | HTTPS + DynamoDB encryption | ✅ | Sí — TLS obligatorio |
+| A03 | Injection | DynamoDB (no SQL) + Zod validation | ✅ | Sí — sin SQL injection posible |
+| A04 | Insecure Design | Serverless + least-privilege IAM | ✅ | Sí |
+| A05 | Security Misconfiguration | IAM + Cognito + S3 block public | ✅ | Sí |
+| A06 | Vulnerable Components | AWS managed runtime Node 22 | ✅ | Sí — auto-patch |
+| A07 | XSS | React (no innerHTML) + SPA static | ⚠️ | Parcial — falta CSP header |
+| A08 | Data Integrity | DynamoDB + S3 encryption | ✅ | Sí |
+| A09 | Logging | CloudWatch + X-Ray | ✅ | Sí |
+| A10 | SSRF | Serverless + no server | ✅ | Sí — sin servidor expuesto |
 
 ### Recursos que NO generan costo
 
