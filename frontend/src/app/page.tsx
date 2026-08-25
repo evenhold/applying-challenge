@@ -11,6 +11,7 @@ type View = 'home' | 'login' | 'dashboard' | 'merchants-new' | 'merchants-detail
 function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
   const [view, setView] = useState<View>('home');
+  const [selectedMerchantId, setSelectedMerchantId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && (view === 'home' || view === 'login')) {
@@ -20,6 +21,11 @@ function AppContent() {
 
   if (isLoading) return <Shell><p>Cargando...</p></Shell>;
 
+  const goToDetail = (id: string) => {
+    setSelectedMerchantId(id);
+    setView('merchants-detail');
+  };
+
   return (
     <Shell>
       {!isAuthenticated && view === 'home' && <Home onLogin={() => setView('login')} />}
@@ -27,14 +33,14 @@ function AppContent() {
       {isAuthenticated && view === 'dashboard' && (
         <Dashboard
           onNew={() => setView('merchants-new')}
-          onDetail={(id) => setView('merchants-detail')}
+          onDetail={goToDetail}
         />
       )}
       {isAuthenticated && view === 'merchants-new' && (
         <MerchantNewPage onBack={() => setView('dashboard')} />
       )}
-      {isAuthenticated && view === 'merchants-detail' && (
-        <MerchantDetailPage onBack={() => setView('dashboard')} />
+      {isAuthenticated && view === 'merchants-detail' && selectedMerchantId && (
+        <MerchantDetailPage merchantId={selectedMerchantId} onBack={() => setView('dashboard')} />
       )}
     </Shell>
   );
@@ -262,7 +268,7 @@ function MerchantNewPage({ onBack }: { onBack: () => void }) {
 
 // ====================== MERCHANT DETAIL ======================
 
-function MerchantDetailPage({ onBack }: { onBack: () => void }) {
+function MerchantDetailPage({ merchantId, onBack }: { merchantId: string; onBack: () => void }) {
   const { tokens } = useAuth();
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -272,7 +278,7 @@ function MerchantDetailPage({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     const fetchMerchant = async () => {
       try {
-        const data = await api.get<Merchant>('/merchants/placeholder', tokens?.accessToken);
+        const data = await api.get<Merchant>(`/merchants/${merchantId}`, tokens?.accessToken);
         setMerchant(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar merchant');
@@ -280,8 +286,8 @@ function MerchantDetailPage({ onBack }: { onBack: () => void }) {
         setIsLoading(false);
       }
     };
-    if (tokens?.accessToken) fetchMerchant();
-  }, [tokens?.accessToken]);
+    if (tokens?.accessToken && merchantId) fetchMerchant();
+  }, [tokens?.accessToken, merchantId]);
 
   const handleConfirm = async () => {
     if (!merchant) return;

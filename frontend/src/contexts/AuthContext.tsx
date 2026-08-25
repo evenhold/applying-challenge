@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const parsed = JSON.parse(storedTokens) as AuthTokens;
         if (!isTokenExpired(parsed.accessToken)) {
           setTokens(parsed);
-          setUser(parseJwtPayload(parsed.accessToken));
+          setUser(parseJwtPayload(parsed.idToken));
         } else {
           localStorage.removeItem('auth_tokens');
         }
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     const newTokens = await authLogin(email, password);
     setTokens(newTokens);
-    setUser(parseJwtPayload(newTokens.accessToken));
+    setUser(parseJwtPayload(newTokens.idToken));
     localStorage.setItem('auth_tokens', JSON.stringify(newTokens));
   }, []);
 
