@@ -6,10 +6,10 @@ module "merchants" {
   aws_region       = "us-east-1"
   ses_sender_email = "noreply@mini-onboarding.dev"
 
-  cognito_callback_urls = ["http://localhost:3000"]
-  cognito_logout_urls   = ["http://localhost:3000"]
+  cognito_callback_urls = ["https://d1vazin5v6ecqg.cloudfront.net"]
+  cognito_logout_urls   = ["https://d1vazin5v6ecqg.cloudfront.net"]
 
-  cors_allow_origins = ["http://localhost:3000"]
+  cors_allow_origins = ["https://d1vazin5v6ecqg.cloudfront.net"]
 
   merchants_zip_path = "/build/merchants.zip"
   enricher_zip_path  = "/build/enricher.zip"

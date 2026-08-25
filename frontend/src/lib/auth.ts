@@ -1,4 +1,12 @@
-const COGNITO_URL = process.env.NEXT_PUBLIC_COGNITO_URL || '';
+const COGNITO_REGION = process.env.NEXT_PUBLIC_COGNITO_REGION || 'us-east-1';
+const COGNITO_USER_POOL_ID = (() => {
+  const url = process.env.NEXT_PUBLIC_COGNITO_URL || '';
+  const match = url.match(/\/([\w-]+_[\w-]+)$/);
+  return match ? match[1] : '';
+})();
+const COGNITO_CLIENT_ID = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '';
+
+const COGNITO_ENDPOINT = `https://cognito-idp.${COGNITO_REGION}.amazonaws.com/`;
 
 export interface AuthTokens {
   accessToken: string;
@@ -13,44 +21,65 @@ export interface AuthUser {
   username: string;
 }
 
-export async function login(email: string, password: string): Promise<AuthTokens> {
-  const response = await fetch(`${COGNITO_URL}/auth`, {
+async function cognitoRequest(target: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const response = await fetch(COGNITO_ENDPOINT, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    headers: {
+      'Content-Type': 'application/x-amz-json-1.1',
+      'X-Amz-Target': target,
+    },
+    body: JSON.stringify(body),
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Login failed');
+    throw new Error(data.message || 'Cognito request failed');
   }
 
-  const data = await response.json();
+  return data;
+}
+
+export async function login(email: string, password: string): Promise<AuthTokens> {
+  const data = await cognitoRequest(
+    'AWSCognitoIdentityProviderService.InitiateAuth',
+    {
+      AuthFlow: 'USER_PASSWORD_AUTH',
+      ClientId: COGNITO_CLIENT_ID,
+      AuthParameters: {
+        USERNAME: email,
+        PASSWORD: password,
+      },
+    },
+  );
+
+  const result = data.AuthenticationResult as Record<string, string>;
   return {
-    accessToken: data.AuthenticationResult.AccessToken,
-    idToken: data.AuthenticationResult.IdToken,
-    refreshToken: data.AuthenticationResult.RefreshToken,
-    expiresIn: data.AuthenticationResult.ExpiresIn,
+    accessToken: result.AccessToken,
+    idToken: result.IdToken,
+    refreshToken: result.RefreshToken,
+    expiresIn: Number(result.ExpiresIn),
   };
 }
 
 export async function refreshToken(refreshToken: string): Promise<AuthTokens> {
-  const response = await fetch(`${COGNITO_URL}/auth`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
-  });
+  const data = await cognitoRequest(
+    'AWSCognitoIdentityProviderService.InitiateAuth',
+    {
+      AuthFlow: 'REFRESH_TOKEN_AUTH',
+      ClientId: COGNITO_CLIENT_ID,
+      AuthParameters: {
+        REFRESH_TOKEN: refreshToken,
+      },
+    },
+  );
 
-  if (!response.ok) {
-    throw new Error('Token refresh failed');
-  }
-
-  const data = await response.json();
+  const result = data.AuthenticationResult as Record<string, string>;
   return {
-    accessToken: data.AuthenticationResult.AccessToken,
-    idToken: data.AuthenticationResult.IdToken,
-    refreshToken: data.AuthenticationResult.RefreshToken,
-    expiresIn: data.AuthenticationResult.ExpiresIn,
+    accessToken: result.AccessToken,
+    idToken: result.IdToken,
+    refreshToken: result.RefreshToken,
+    expiresIn: Number(result.ExpiresIn),
   };
 }
 

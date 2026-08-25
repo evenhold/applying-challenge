@@ -89,7 +89,7 @@ build-lambda: ## Build Lambda ZIP files with esbuild
 	bash scripts/build-lambda.sh
 
 build-frontend: ## Build frontend static export for S3+CloudFront
-	cd frontend && pnpm build
+	bash scripts/build-frontend.sh
 
 infra-init: ## terraform init
 	docker compose run --rm infra init

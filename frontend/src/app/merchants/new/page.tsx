@@ -65,7 +65,7 @@ function NewMerchantContent() {
           </button>
         </form>
         <p className="form-footer">
-          <a href="/dashboard">← Volver al dashboard</a>
+          <a href="/dashboard/">← Volver al dashboard</a>
         </p>
       </section>
     </main>
