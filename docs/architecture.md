@@ -5,43 +5,43 @@
 ```mermaid
 graph TB
     subgraph "Frontend"
-        A[NextJS Static<br/>S3 + CloudFront]
+        A["NextJS Static (S3 + CloudFront)"]
     end
 
     subgraph "Edge"
-        B[CloudFront<br/>CDN + WAF]
+        B["CloudFront (CDN + WAF)"]
     end
 
     subgraph "Auth"
-        C[Cognito<br/>User Pools]
+        C["Cognito (User Pools)"]
     end
 
     subgraph "API"
-        D[API Gateway v2<br/>HTTP API]
-        E[Lambda API<br/>Node.js 24]
+        D["API Gateway v2 (HTTP API)"]
+        E["Lambda API (Node.js 22)"]
     end
 
     subgraph "Data"
-        F[DynamoDB<br/>Single Table]
+        F["DynamoDB (Single Table)"]
     end
 
     subgraph "Async"
-        G[SQS<br/>merchants-enrichment]
-        H[SQS DLQ<br/>merchants-enrichment-dlq]
-        I[Lambda Enricher<br/>Node.js 24]
+        G["SQS (merchants-enrichment)"]
+        H["SQS DLQ (merchants-enrichment-dlq)"]
+        I["Lambda Enricher (Node.js 22)"]
     end
 
     subgraph "External"
-        J[SUNAT API<br/>Real o Mock]
+        J["SUNAT API (Real o Mock)"]
     end
 
     subgraph "Notification"
-        K[SES<br/>Email Service]
+        K["SES (Email Service)"]
     end
 
     subgraph "Observability"
-        L[CloudWatch<br/>Logs + Metrics]
-        M[X-Ray<br/>Tracing]
+        L["CloudWatch (Logs + Metrics)"]
+        M["X-Ray (Tracing)"]
     end
 
     A -->|HTTPS| B
@@ -66,31 +66,31 @@ graph TB
 ```mermaid
 graph TB
     subgraph "Browser"
-        A[localhost:3000<br/>NextJS Dev Server]
+        A["localhost:3000 (NextJS Dev Server)"]
     end
 
     subgraph "NextJS API Routes - CORS Proxy"
-        B[/api/auth<br/>Cognito proxy]
-        C[/api/merchants<br/>Backend proxy]
-        D[/api/merchants/id<br/>Backend proxy]
+        B["/api/auth (Cognito proxy)"]
+        C["/api/merchants (Backend proxy)"]
+        D["/api/merchants/id (Backend proxy)"]
     end
 
     subgraph "FLOCI - AWS Local Emulator :4566"
-        E[Cognito<br/>User Pools]
-        F[DynamoDB<br/>merchants table]
-        G[SQS<br/>merchants-enrichment]
-        H[SES<br/>Mock]
+        E["Cognito (User Pools)"]
+        F["DynamoDB (merchants table)"]
+        G["SQS (merchants-enrichment)"]
+        H["SES (Mock)"]
     end
 
     subgraph "Backend :3001"
-        I[server.ts<br/>HTTP Dev Server]
-        J[handlers<br/>merchants, enricher]
-        K[usecases<br/>create, list, getById, update, enrich]
-        L[lib<br/>dynamodb, sqs, sunat, ses]
+        I["server.ts (HTTP Dev Server)"]
+        J["handlers (merchants, enricher)"]
+        K["usecases (create, list, getById, update, enrich)"]
+        L["lib (dynamodb, sqs, sunat, ses)"]
     end
 
     subgraph "Worker"
-        M[worker.ts<br/>SQS Poller<br/>cada 2s]
+        M["worker.ts (SQS Poller, cada 2s)"]
     end
 
     A -->|login| B
